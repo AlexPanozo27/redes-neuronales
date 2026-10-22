@@ -1,0 +1,152 @@
+<title>Traductor al aymara y quechua</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#B4235A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#F472B6}}
+:root[data-theme="dark"]{--lab:#F472B6}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.compare>div{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;box-shadow:4px 4px 0 var(--ink)}
+.compare .shelf{font-size:30px;line-height:1.15;letter-spacing:-2px;word-break:break-all}
+.compare b{font-family:var(--f-display);font-size:19px}
+.compare span{font-size:15px;color:var(--soft)}
+.lang{display:flex;gap:8px;flex-wrap:wrap}
+.lang .btn[aria-pressed="true"]{background:var(--lab);color:var(--card);border-color:var(--lab)}
+.phrases{display:flex;flex-direction:column;gap:14px}
+.ph{border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--card);display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.ph .es{font-family:var(--f-display);font-size:22px;font-weight:700;line-height:1.25}
+.ph .es small{display:block;font:700 12px var(--f-mono);color:var(--soft);letter-spacing:.05em;text-transform:uppercase}
+.flowline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.flowline{grid-template-columns:1fr}}
+.stepbox{background:var(--paper);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.stepbox .lbl{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.stepbox a{font:700 15px var(--f-body);color:var(--card);background:var(--lab);text-decoration:none;border-radius:10px;padding:8px 10px;text-align:center}
+.stepbox a.off{background:var(--line);color:var(--soft);pointer-events:none}
+textarea,select,input[type=text]{font:16px var(--f-body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%}
+textarea{min-height:60px;resize:vertical}
+.verdictsel{display:flex;flex-wrap:wrap;gap:6px}
+.verdictsel button{font:700 14px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;cursor:pointer;min-height:38px}
+.verdictsel button[aria-pressed="true"][data-r="bien"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.verdictsel button[aria-pressed="true"][data-r="parcial"]{background:var(--spark-soft);border-color:var(--spark);color:var(--spark-ink)}
+.verdictsel button[aria-pressed="true"][data-r="mal"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.tally{display:flex;gap:10px;flex-wrap:wrap}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 1.3</span>
+      <h1>¿Cuánto aymara sabe la máquina?</h1>
+      <p class="lede">Los traductores automáticos aprenden leyendo textos. Vamos a investigar qué tan bien traducen a nuestros idiomas, con la ayuda de alguien que los hable de verdad.</p>
+      <div class="meta"><span>⏱ 10 a 20 minutos</span><span>Necesitas internet y, si puedes, a un hablante de aymara, quechua o guaraní</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">📖↔📖</span><p>Un traductor automático aprende viendo millones de frases <strong>ya traducidas</strong> por personas, y busca patrones.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">🌐</span><p>En internet hay muchísimo texto en castellano o inglés, pero <strong>muy poco</strong> en aymara, quechua o guaraní.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">📉</span><p>Con pocos ejemplos, la máquina aprende poco. No es que el idioma sea pobre: le <strong>faltan datos</strong>.</p></div>
+    </div>
+    <div class="compare" aria-label="Ilustración, no a escala">
+      <div><span class="shelf" aria-hidden="true">📚📚📚📚📚📚📚📚📚📚📚📚</span><b>Castellano</b><span>Como aprender un idioma con una biblioteca entera.</span></div>
+      <div><span class="shelf" aria-hidden="true">📒</span><b>Aymara, quechua, guaraní</b><span>Como aprenderlo con un solo cuaderno de apuntes.</span></div>
+    </div>
+    <p class="muted" style="font-size:15px">Ilustración, no a escala. A los idiomas con pocos textos digitales se les llama <button class="term" data-def="Idioma del que existen pocos textos, grabaciones y traducciones en formato digital. La IA aprende mal de él por falta de ejemplos, no por la riqueza del idioma.">lenguas de pocos recursos</button>.</p>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, investiga</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <p><strong>Elige el idioma del experimento.</strong> Cada frase tiene tres pasos: traducir con la máquina, hacer la «ida y vuelta» y preguntarle a un hablante.</p>
+      <div class="lang" role="group" aria-label="Idioma">
+        <button class="btn" data-l="ay" aria-pressed="true">Aymara</button>
+        <button class="btn" data-l="qu" aria-pressed="false">Quechua</button>
+        <button class="btn" data-l="gn" aria-pressed="false">Guaraní</button>
+      </div>
+      <p class="muted" style="font-size:15px">¿Qué es la <button class="term" data-def="Traducir una frase a otro idioma y luego traducir el resultado de vuelta al idioma original. Si regresa algo muy distinto, el sentido se perdió en el camino.">ida y vuelta</button>? Si traduces al aymara y luego de vuelta al castellano, deberías recuperar algo parecido a la frase original.</p>
+    </div>
+    <div class="phrases" id="list"></div>
+    <div class="bench">
+      <label for="own" style="font-weight:700">Agrega una frase tuya</label>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="own" placeholder="Ej.: Mañana vamos a la feria de El Alto" style="flex:1;min-width:0"><button class="btn" id="add">Agregar</button></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Tus resultados</span>
+    <div class="bench" aria-live="polite">
+      <div class="tally" id="tally"></div>
+      <p id="tallyNote"></p>
+      <div class="row"><button class="btn" id="copy">Copiar mis resultados</button><button class="btn" id="clear">Borrar mis notas</button><span class="muted" id="msg"></span></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>La IA es lo que lee</b><span>Un traductor solo puede ser tan bueno como los ejemplos de los que aprendió.</span></div>
+      <div><b>Las frases simples salen mejor</b><span>Lo cotidiano aparece más en los textos; lo local, como comidas o lugares, aparece poco.</span></div>
+      <div><b>Las personas son la clave</b><span>Cada frase bien traducida por un hablante y guardada en digital es un dato que puede mejorar a la IA.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>¿Qué haría falta para reunir miles de frases bien traducidas en tu comunidad o tu colegio? ¿Quién debería ser dueño de esos datos?</p></div>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 1.3.</span><span>Usa el traductor público de Google, que incorporó aymara, quechua y guaraní en 2022. Tus notas se guardan solo en este navegador.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+const BASE=["Buenos días, ¿cómo estás?","Mi abuela vive en el altiplano y cultiva quinua.","Hoy hace mucho frío en La Paz.","¿Cuánto cuesta un kilo de papa en el mercado?","El agua es vida y hay que cuidarla.","La computadora aprende de los ejemplos que le damos."];
+const LN={ay:"aymara",qu:"quechua",gn:"guaraní"};
+const RATE=[["bien","✓ Está bien"],["parcial","≈ Se entiende, con errores"],["mal","✗ No tiene sentido"]];
+let lang="ay",S={own:[],notes:{}},F={tr:false,back:false};
+try{const s=JSON.parse(localStorage.getItem("rnm-lenguas")||"null");if(s&&s.notes)S=s;}catch(e){}
+function save(){try{localStorage.setItem("rnm-lenguas",JSON.stringify(S));}catch(e){}}
+const gt=(sl,tl,t)=>`https://translate.google.com/?sl=${sl}&tl=${tl}&text=${encodeURIComponent(t)}&op=translate`;
+const key=i=>lang+":"+i, esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const phrases=()=>BASE.concat(S.own);
+function render(){
+  document.querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===lang));
+  $("list").innerHTML=phrases().map((p,i)=>{const n=S.notes[key(i)]||{};
+    return `<article class="ph" data-i="${i}"><div class="es"><small>Frase ${i+1}</small>${esc(p)}</div>
+    <div class="flowline">
+      <div class="stepbox"><span class="lbl">Paso 1 · La máquina traduce</span><a href="${gt("es",lang,p)}" target="_blank" rel="noopener" data-act="tr">Traducir al ${LN[lang]} ↗</a>
+        <label class="muted" style="font-size:14px" for="m-${lang}-${i}">Pega aquí lo que dijo la máquina</label><textarea id="m-${lang}-${i}" data-f="m">${esc(n.m||"")}</textarea></div>
+      <div class="stepbox"><span class="lbl">Paso 2 · Ida y vuelta</span><a href="${gt(lang,"es",n.m||"")}" target="_blank" rel="noopener" data-act="back" class="${n.m?"":"off"}">Volver al castellano ↗</a>
+        <label class="muted" style="font-size:14px" for="b-${lang}-${i}">¿Qué frase regresó?</label><textarea id="b-${lang}-${i}" data-f="b">${esc(n.b||"")}</textarea></div>
+      <div class="stepbox"><span class="lbl">Paso 3 · Pregunta a un hablante</span>
+        <label class="muted" style="font-size:14px" for="h-${lang}-${i}">¿Cómo lo diría él o ella?</label><textarea id="h-${lang}-${i}" data-f="h">${esc(n.h||"")}</textarea>
+        <div class="verdictsel" role="group" aria-label="Opinión del hablante">${RATE.map(([v,t])=>`<button data-r="${v}" aria-pressed="${n.r===v}">${t}</button>`).join("")}</div></div>
+    </div></article>`;}).join("");
+  tally();
+}
+function counts(){const c={bien:0,parcial:0,mal:0};phrases().forEach((p,i)=>{const r=(S.notes[key(i)]||{}).r;if(c[r]!==undefined)c[r]++;});return c;}
+function tally(){const c=counts(),tot=c.bien+c.parcial+c.mal;
+  $("tally").innerHTML=`<span class="pill ok">bien: ${c.bien}</span><span class="pill spark">con errores: ${c.parcial}</span><span class="pill bad">sin sentido: ${c.mal}</span>`;
+  $("tallyNote").textContent=tot?`Evaluaste ${tot} frase(s) en ${LN[lang]}. ${c.mal+c.parcial>c.bien?"La máquina tuvo más problemas que aciertos: es lo esperable en una lengua de pocos recursos.":"¿Te sorprendió? Prueba con frases más largas o con palabras muy locales."}`:`Aún no evaluaste frases en ${LN[lang]}. Los resultados se cuentan con la opinión del hablante (paso 3).`;
+  G.update({tr:F.tr,back:F.back,rated:tot>0});}
+$("list").addEventListener("input",e=>{const f=e.target.dataset.f;if(!f)return;const art=e.target.closest(".ph"),i=art.dataset.i;
+  const n=S.notes[key(i)]=S.notes[key(i)]||{};n[f]=e.target.value;save();
+  if(f==="m"){const a=art.querySelector('[data-act="back"]');a.href=gt(lang,"es",n.m);a.classList.toggle("off",!n.m);}});
+$("list").addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(a){F[a.dataset.act]=true;tally();}
+  const r=e.target.closest("[data-r]");if(r){const i=r.closest(".ph").dataset.i,n=S.notes[key(i)]=S.notes[key(i)]||{};n.r=n.r===r.dataset.r?"":r.dataset.r;save();
+    r.parentNode.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.r===n.r));tally();}});
+document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{lang=b.dataset.l;render();});
+$("add").onclick=()=>{const v=$("own").value.trim();if(!v)return;S.own.push(v);$("own").value="";save();render();};
+$("own").addEventListener("keydown",e=>{if(e.key==="Enter")$("add").click();});
+$("clear").onclick=()=>{const b=$("clear");if(b.dataset.c){S={own:[],notes:{}};save();render();b.textContent="Borrar mis notas";delete b.dataset.c;$("msg").textContent="Notas borradas.";}else{b.dataset.c=1;b.textContent="Pulsa otra vez para confirmar";}};
+$("copy").onclick=()=>{const L=[];Object.keys(LN).forEach(l=>phrases().forEach((p,i)=>{const n=S.notes[l+":"+i];if(n&&(n.m||n.h||n.b||n.r))L.push(`[${LN[l]}] ${p}\n  Máquina: ${n.m||"-"}\n  Ida y vuelta: ${n.b||"-"}\n  Hablante: ${n.h||"-"}\n  Opinión: ${(RATE.find(r=>r[0]===n.r)||["","sin evaluar"])[1]}`);}));
+  navigator.clipboard.writeText(L.join("\n\n")||"Todavía no hay notas.").then(()=>$("msg").textContent="Copiado.",()=>$("msg").textContent="No se pudo copiar en este navegador.");};
+const G=Guide($("guide"),{
+  intro:"Hola, soy <strong>Chispa</strong>. Hoy seremos investigadores. No te voy a decir si el traductor es bueno o malo: lo vas a <strong>comprobar tú</strong>, en tres misiones.",
+  missions:[
+   {text:"En la <strong>frase 1</strong>, pulsa <strong>«Traducir»</strong>. Se abrirá el traductor de Google con la frase escrita. Copia el resultado y pégalo en la casilla.",hint:"El botón está en el «Paso 1» de cada frase. Si no se abre, revisa tu conexión a internet.",
+    done:s=>s.tr,ok:"¡Bien! Ahora tienes la versión de la máquina. ¿Cómo saber si está bien si no hablas el idioma? Hay un truco..."},
+   {text:"Haz la <strong>ida y vuelta</strong>: con la traducción ya pegada, pulsa <strong>«Volver al castellano»</strong> y anota qué frase regresó.",hint:"El botón del paso 2 se activa cuando hay texto en la casilla del paso 1.",
+    done:s=>s.back,ok:"Si regresó algo muy distinto, la máquina perdió el sentido en el camino. Ojo: aunque regrese bien, no prueba que la traducción sea correcta. Para eso necesitamos a una persona."},
+   {text:"Pregunta a un familiar, vecino o profesor que hable el idioma. Escribe cómo lo diría y marca su <strong>opinión</strong> sobre la traducción de la máquina.",hint:"Si no conoces a nadie ahora, guarda el enlace y vuelve después. Tus notas quedan en este celular.",
+    done:s=>s.rated,ok:"¡Ese es el dato más valioso! La opinión de un hablante es justo lo que le falta a la máquina para aprender mejor."}],
+  finale:"Completaste el experimento. Prueba con más frases y con otro idioma, y compara. Puedes copiar tus resultados para compartirlos en clase."});
+render();
+</script>

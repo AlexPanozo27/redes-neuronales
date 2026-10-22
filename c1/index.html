@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>Laboratorios del Capítulo I</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+.labs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.lab{display:flex;flex-direction:column;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:16px;box-shadow:4px 4px 0 var(--ink);color:var(--ink);text-decoration:none;transition:transform .12s}
+.lab:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.lab .tag{background:var(--c)}
+.lab b{font-family:var(--f-display);font-size:22px;line-height:1.15}
+.lab span.d{font-size:16px;color:var(--soft)}
+.lab .go{font-weight:700;color:var(--c);margin-top:auto}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales</span>
+      <span class="tag">Capítulo I</span>
+      <h1>Laboratorios del Capítulo I</h1>
+      <p class="lede">Cada QR del libro te trae a uno de estos laboratorios. Son cortos, se usan desde el celular y te guía Chispa, una neurona con muchas ganas de explicar.</p>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+  <section class="labs">
+    <a class="lab" href="neurona/" style="--c:#D97706"><span class="tag">Laboratorio 1.1</span><b>La neurona que decide si cruzas la calle</b><span class="d">Construye la primera neurona artificial de la historia (1943).</span><span class="go">Entrar →</span></a>
+    <a class="lab" href="perceptron/" style="--c:#0E7490"><span class="tag">Laboratorio 1.2</span><b>Enséñale a una neurona a llevar paraguas</b><span class="d">Mira cómo una neurona aprende de sus errores, y dónde se atasca.</span><span class="go">Entrar →</span></a>
+    <a class="lab" href="lenguas/" style="--c:#B4235A"><span class="tag">Laboratorio 1.3</span><b>¿Cuánto aymara sabe la máquina?</b><span class="d">Investiga cómo traduce la IA al aymara, quechua y guaraní.</span><span class="go">Entrar →</span></a>
+    <a class="lab" href="habitacion-china/" style="--c:#B91C1C"><span class="tag">Laboratorio 2.1</span><b>Encerrado en la habitación china</b><span class="d">Conversa en chino sin saber chino. ¿Eso es entender?</span><span class="go">Entrar →</span></a>
+    <a class="lab" href="gato/" style="--c:#7C3AED"><span class="tag">Laboratorio 2.2</span><b>¿Es un gato? Reglas contra ejemplos</b><span class="d">Un duelo entre reglas escritas a mano y una neurona que aprende.</span><span class="go">Entrar →</span></a>
+    <a class="lab" href="palabras/" style="--c:#15803D"><span class="tag">Laboratorio 2.3</span><b>Una máquina que escribe palabra por palabra</b><span class="d">Un mini ChatGPT que solo leyó este capítulo, con temperatura.</span><span class="go">Entrar →</span></a>
+    <a class="lab" href="mito-o-realidad/" style="--c:#C2410C"><span class="tag">Laboratorio 2.4</span><b>¿Mito o realidad?</b><span class="d">Doce afirmaciones para poner a prueba lo que aprendiste.</span><span class="go">Entrar →</span></a>
+  </section>
+  <footer><span>Ejemplos propios del equipo del libro <em>Redes Neuronales en Mortales</em>.</span><span>No necesitas cuenta ni instalar nada.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+</script>
+</body></html>

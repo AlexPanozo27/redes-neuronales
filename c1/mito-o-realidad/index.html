@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>¿Mito o realidad?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#C2410C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#FB923C}}
+:root[data-theme="dark"]{--lab:#FB923C}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.how{grid-template-columns:1fr}}
+.prog{display:flex;gap:4px}
+.prog i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.prog i.ok{background:var(--ok)} .prog i.bad{background:var(--bad)} .prog i.cur{background:var(--lab)}
+.stage{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:480px){.stage{grid-template-columns:64px minmax(0,1fr)}}
+.claimcard{background:var(--card);border:3px solid var(--ink);border-radius:18px;padding:18px;box-shadow:6px 6px 0 var(--ink);position:relative}
+.claimcard::before{content:"";position:absolute;left:-13px;top:28px;width:20px;height:20px;background:var(--card);border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.claim{font-family:var(--f-display);font-size:clamp(23px,5.5vw,32px);font-weight:700;line-height:1.2;text-wrap:balance}
+.claimcard small{font:700 12px var(--f-mono);color:var(--soft);letter-spacing:.05em;text-transform:uppercase}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.answers .btn{min-height:64px;font-size:19px;border-width:3px}
+.answers .btn.sel-ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.answers .btn.sel-bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.expl{display:flex;flex-direction:column;gap:8px;background:var(--paper);border-radius:14px;padding:14px}
+.expl .v{font-family:var(--f-display);font-size:22px;font-weight:700}
+.big{font:800 64px var(--f-display);line-height:1;color:var(--lab)}
+.diploma{border:3px double var(--lab);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;background:var(--card)}
+.review{display:flex;flex-direction:column;gap:8px}
+.review div{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:10px;align-items:baseline;font-size:16px}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 2.4</span>
+      <h1>¿Mito o realidad?</h1>
+      <p class="lede">Sobre la inteligencia artificial se dicen muchas cosas: algunas vienen del cine, otras de la publicidad y otras son ciertas. Con lo que leíste en el Capítulo I, ¿sabes separarlas?</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>12 afirmaciones, en orden distinto cada vez</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Cómo se juega</span>
+    <div class="how">
+      <div class="panel"><span class="n">1</span><p>Lee la afirmación que dice Chispa.</p></div>
+      <div class="panel"><span class="n">2</span><p>Decide: ¿es un <strong>mito</strong> (algo que mucha gente cree, pero es falso) o una <strong>realidad</strong>?</p></div>
+      <div class="panel"><span class="n">3</span><p>Lee la explicación y la sección del libro donde se habla del tema.</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="quiz">
+    <div class="bench">
+      <div class="prog" id="prog" aria-hidden="true"></div>
+      <div class="row" style="justify-content:space-between"><span class="muted mono" id="num"></span><span class="pill" id="pts"></span></div>
+      <div class="stage">
+        <div id="face"></div>
+        <div class="claimcard"><small>Chispa escuchó por ahí que...</small><p class="claim" id="claim"></p></div>
+      </div>
+      <div class="answers">
+        <button class="btn" id="a-m">🧪 Mito</button>
+        <button class="btn" id="a-r">✅ Realidad</button>
+      </div>
+      <div class="expl" id="expl" aria-live="polite" hidden>
+        <span class="v" id="verdict"></span>
+        <p id="why"></p>
+        <p class="muted" id="sec" style="font-size:15px"></p>
+        <div><button class="btn primary" id="next">Siguiente</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="end" hidden>
+    <div class="diploma">
+      <div data-chispa="wow" style="width:96px"></div>
+      <span class="kicker">Resultado</span>
+      <span class="big mono" id="final"></span>
+      <h2 id="title"></h2>
+      <p id="finalMsg" style="max-width:48ch"></p>
+      <button class="btn primary" id="again">Jugar otra vez</button>
+    </div>
+    <div class="bench"><h3>Repaso de las doce</h3><div class="review" id="review"></div></div>
+  </section>
+
+  <section class="sec">
+    <div class="think"><b>Para pensar</b><p>¿Cuál de estos mitos escuchaste más veces? ¿De dónde crees que viene: del cine, de la publicidad o de las noticias?</p></div>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../palabras/">← 2.3</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><span></span></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 2.4.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+const Q=[
+ ["La IA piensa y siente como un ser humano.",0,"Los sistemas actuales encuentran patrones en los datos. No tienen emociones ni conciencia. Si un asistente escribe «me alegra ayudarte», es porque aprendió que esa frase encaja, no porque sienta alegría.","Sección 2.4 y el efecto ELIZA, sección 1.2"],
+ ["Inteligencia artificial es lo mismo que ChatGPT.",0,"Los chatbots son solo una aplicación. También son IA el filtro de spam, el GPS que calcula rutas y los sistemas que detectan fraudes en el banco. La IA existe desde 1956; ChatGPT apareció en 2022.","Sección 2.4"],
+ ["La IA es objetiva porque es una máquina.",0,"Aprende de datos creados por personas, y esos datos pueden tener prejuicios. Si se entrena con contrataciones pasadas injustas, repetirá esa injusticia.","Sección 2.4"],
+ ["Si lo dice la IA, debe ser verdad.",0,"Los modelos generativos pueden «alucinar»: inventan fechas, nombres o fuentes con total seguridad, porque producen lo probable y no necesariamente lo verdadero. Lo viste en el Laboratorio 2.3.","Secciones 2.3 y 2.4"],
+ ["La IA aprende sola, sin ninguna ayuda humana.",0,"Hay personas que reúnen y etiquetan datos, diseñan la red, deciden cómo medir el error y revisan los resultados. Hasta los grandes modelos se mejoran con evaluaciones humanas.","Sección 2.4"],
+ ["Para entender la IA hay que ser un genio de las matemáticas.",0,"Las ideas centrales se entienden con ejemplos cotidianos, como la neurona que decide si cruzar la calle o el perceptrón que aprende a llevar paraguas. ¡Ya lo comprobaste!","Secciones 1.1, 1.2 y 2.4"],
+ ["La inteligencia artificial existe desde mucho antes que ChatGPT.",1,"El nombre nació en la conferencia de Dartmouth en 1956, y la primera neurona artificial es de 1943.","Sección 1.1"],
+ ["Un modelo de lenguaje escribe prediciendo, una tras otra, la palabra más probable.",1,"Calcula qué tan probable es cada palabra como continuación, elige una con algo de azar (la temperatura) y repite.","Sección 2.3"],
+ ["Una sola neurona simple no puede aprender el «interruptor de escalera» (XOR).",1,"Solo puede separar los casos con una línea recta, y ninguna línea recta separa los casos del XOR. Hacen falta varias neuronas en capas.","Sección 1.2"],
+ ["Muchos modelos de IA saben poco aymara o quechua porque hay pocos textos digitales en esos idiomas.",1,"Son lenguas de pocos recursos para la IA. No es por falta de riqueza del idioma, sino por la poca cantidad de datos digitales disponibles.","Sección 1.3"],
+ ["Toda la IA que existe hoy es IA débil.",1,"Puede ser excelente en las tareas para las que se entrenó, pero ninguna comprende el mundo como una persona. La IA fuerte sigue siendo una pregunta abierta.","Sección 2.1"],
+ ["Las personas solemos creer que un programa nos entiende aunque solo siga patrones.",1,"Se llama efecto ELIZA, por el programa de Joseph Weizenbaum de 1966 que imitaba a una psicoterapeuta buscando palabras clave.","Sección 1.2"]];
+let order,i,res;
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function face(m){$("face").innerHTML=chispaSVG(m);$("face").classList.remove("wob");void $("face").offsetWidth;$("face").classList.add("wob");}
+function start(){order=shuffle(Q);i=0;res=[];$("quiz").hidden=false;$("end").hidden=true;show();}
+function show(){const q=order[i];$("num").textContent=`Afirmación ${i+1} de ${order.length}`;$("pts").textContent=`${res.filter(Boolean).length} aciertos`;
+  $("claim").textContent="«"+q[0]+"»";$("expl").hidden=true;face("think");
+  ["a-m","a-r"].forEach(id=>{$(id).disabled=false;$(id).className="btn";});
+  $("prog").innerHTML=order.map((_,k)=>`<i class="${k<i?(res[k]?"ok":"bad"):k===i?"cur":""}"></i>`).join("");}
+function answer(v){const q=order[i],ok=v===q[1];res.push(ok);
+  $(v?"a-r":"a-m").classList.add(ok?"sel-ok":"sel-bad");$("a-m").disabled=$("a-r").disabled=true;face(ok?"happy":"sad");
+  $("verdict").textContent=(ok?"¡Correcto! ":"¡Uy, no! ")+(q[1]?"Es una realidad.":"Es un mito.");
+  $("why").textContent=q[2];$("sec").textContent="En el libro: "+q[3]+".";$("expl").hidden=false;
+  $("next").textContent=i===order.length-1?"Ver mi resultado":"Siguiente";$("next").focus();$("pts").textContent=`${res.filter(Boolean).length} aciertos`;
+  $("prog").innerHTML=order.map((_,k)=>`<i class="${k<=i?(res[k]?"ok":"bad"):""}"></i>`).join("");}
+$("a-m").onclick=()=>answer(0);$("a-r").onclick=()=>answer(1);
+$("next").onclick=()=>{if(i<order.length-1){i++;show();}else end();};
+function end(){const n=res.filter(Boolean).length;$("quiz").hidden=true;$("end").hidden=false;$("final").textContent=`${n}/${order.length}`;
+  $("title").textContent=n>=11?"Cazador de mitos":n>=8?"Buen detector":"Aprendiz curioso";
+  $("finalMsg").textContent=n>=11?"Separas muy bien lo que la IA es de lo que se dice de ella. Comparte el juego y reta a alguien.":n>=8?"Muy bien. Revisa abajo las que fallaste y la sección donde se explican.":"Buen comienzo. Vuelve a las secciones indicadas abajo y juega otra vez.";
+  $("review").innerHTML=order.map((q,k)=>`<div><span class="pill ${res[k]?"ok":"bad"}">${q[1]?"realidad":"mito"}</span><span>${q[0]} <span class="muted">(${q[3]})</span></span></div>`).join("");
+  $("end").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}
+$("again").onclick=()=>{start();$("quiz").scrollIntoView();};
+start();
+</script>
+</body></html>

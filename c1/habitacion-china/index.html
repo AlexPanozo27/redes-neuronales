@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>La habitación china</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#B91C1C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#F87171}}
+:root[data-theme="dark"]{--lab:#F87171}
+.zh{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+#roomart{width:100%;max-width:560px;display:block;margin:0 auto}
+#roomart text{font-family:var(--f-body)}
+.split{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px}
+@media (max-width:700px){.split{grid-template-columns:1fr}}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.side h3{display:flex;gap:8px;align-items:center}
+.paper{background:var(--paper);border:2px dashed var(--soft);border-radius:12px;padding:14px;text-align:center}
+.paper .zh{font-size:34px;letter-spacing:.08em;line-height:1.3;word-break:break-all}
+.manual{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto;padding:4px}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--card);cursor:pointer;color:var(--ink);font:inherit;text-align:left}
+.rule .zh{font-size:20px;word-break:break-all}
+.rule .arrow{font:700 12px var(--f-mono);color:var(--soft)}
+.rule:hover{border-color:var(--lab)}
+.rule.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.rule.right{border-color:var(--ok);background:var(--ok-soft)}
+.rule.hinted{border-color:var(--spark);box-shadow:0 0 0 3px var(--spark-soft)}
+.chat{background:var(--paper);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:180px}
+.msg{max-width:88%;padding:8px 12px;border-radius:14px;font-size:16px}
+.msg .zh{font-size:20px}
+.msg.q{background:var(--card);border:1px solid var(--line);align-self:flex-start}
+.msg.a{background:var(--lab);color:var(--card);align-self:flex-end}
+.msg.r{align-self:flex-start;font-style:italic;color:var(--soft);font-size:15px;padding:0 4px}
+.reveal td{text-align:left}
+.reveal .zh{font-size:19px}
+.vote{display:flex;flex-direction:column;gap:8px}
+.vote .btn{text-align:left;font-weight:400}
+.vote .btn[aria-pressed="true"]{border-color:var(--lab);background:var(--paper)}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 2.1</span>
+      <h1>Encerrado en la habitación china</h1>
+      <p class="lede">¿Puede una máquina conversar perfecto sin entender nada? En 1980 el filósofo John Searle propuso un experimento mental para responder. Hoy no lo vas a imaginar: lo vas a vivir.</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>No necesitas saber chino. De hecho, mejor si no sabes.</span></div>
+    </div>
+    <div data-chispa="wow" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">💬🤖</span><p>Turing dijo en 1950: si una máquina conversa y no la puedes distinguir de una persona, ¿por qué no decir que piensa?</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">📕</span><p>Searle respondió: un programa es solo un <strong>manual de reglas</strong> para mover símbolos. Seguir reglas no es entender.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🚪</span><p>Para probarlo, imaginó a una persona encerrada que responde en chino con un manual... y esa persona hoy eres <strong>tú</strong>.</p></div>
+    </div>
+    <svg viewBox="0 0 560 220" id="roomart" role="img" aria-label="Una habitación con una rendija, una persona y un manual de reglas; afuera, alguien que habla chino"></svg>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, entra a la habitación</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <div class="row" style="justify-content:space-between"><h3 id="round">Papel 1 de 6</h3><span class="pill" id="score">0 respuestas</span></div>
+      <div class="split">
+        <div class="side">
+          <h3>🚪 Adentro: tú</h3>
+          <div class="paper"><span class="muted" style="font-size:14px">Entra por la rendija:</span><div class="zh" id="incoming"></div></div>
+          <p style="font-size:16px"><strong>Tu manual</strong> dice: «Si recibes los símbolos de la izquierda, devuelve los de la derecha». Toca la regla que coincide.</p>
+          <div class="manual" id="manual"></div>
+          <div class="row"><button class="btn" id="look">Ayúdame a buscar</button><button class="btn primary" id="next" hidden>Siguiente papel</button></div>
+        </div>
+        <div class="side">
+          <h3>🧑 Afuera: alguien que habla chino</h3>
+          <div class="chat" id="chat" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bench reveal" id="reveal" hidden>
+      <h2>La gran revelación</h2>
+      <p>Esto es lo que se dijo en la conversación. Lee la columna de tus respuestas con atención.</p>
+      <div class="tablewrap"><table id="trans"></table></div>
+      <p>Dijiste que eras una persona, que vivías en La Paz y que <strong>entendías perfectamente</strong>. Desde afuera parecías hablar chino con fluidez. Pero no entendiste ni una palabra: solo comparaste formas y copiaste símbolos.</p>
+      <div class="vote" id="vote">
+        <strong>Entonces, ¿quién entendía chino en esta habitación?</strong>
+        <button class="btn" data-v="0">Nadie. Seguir reglas no es comprender.</button>
+        <button class="btn" data-v="1">El sistema completo: persona, manual y habitación juntos.</button>
+        <button class="btn" data-v="2">No sé. Depende de qué significa «entender».</button>
+        <p id="voteMsg"></p>
+      </div>
+      <div><button class="btn" id="again">Volver a empezar</button></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Conversar no es entender</b><span>Respondiste perfecto sin saber qué decías. Desde afuera, nadie lo habría notado.</span></div>
+      <div><b>Un programa es un manual</b><span>Según Searle, una computadora hace lo mismo que tú: mueve símbolos siguiendo reglas.</span></div>
+      <div><b>La pregunta sigue abierta</b><span>Los chatbots de hoy no usan un manual escrito a mano: aprenden sus «reglas» de millones de textos. ¿Entienden? Los expertos aún discuten.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>Cuando un asistente de IA te dice «te entiendo», ¿qué crees que está pasando por dentro? Recuerda también el efecto ELIZA de la sección 1.2.</p></div>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../lenguas/">← 1.3</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../gato/">2.2 →</a></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 2.1.</span><span>Las frases están en chino mandarín simplificado.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+const R=[
+ {q:"你好吗？",a:"我很好，谢谢。",qe:"¿Cómo estás?",ae:"Estoy muy bien, gracias.",o:"«Qué amable.»"},
+ {q:"你叫什么名字？",a:"我叫小明。",qe:"¿Cómo te llamas?",ae:"Me llamo Xiaoming.",o:"«Un nombre muy común en China.»"},
+ {q:"你住在哪里？",a:"我住在拉巴斯。",qe:"¿Dónde vives?",ae:"Vivo en La Paz.",o:"«¡Qué lejos! Y escribe sin errores.»"},
+ {q:"你喜欢吃什么？",a:"我喜欢吃土豆。",qe:"¿Qué te gusta comer?",ae:"Me gusta comer papa.",o:"«Respuesta natural, buena gramática.»"},
+ {q:"你是机器吗？",a:"不是，我是人。",qe:"¿Eres una máquina?",ae:"No, soy una persona.",o:"«Me quedo tranquilo.»"},
+ {q:"你懂我说的话吗？",a:"当然懂。",qe:"¿Entiendes lo que te digo?",ae:"Por supuesto que entiendo.",o:"«Habla chino perfectamente.»"}];
+const DECOYS=[{q:"今天天气怎么样？",a:"今天下雨。"},{q:"你几岁了？",a:"我二十岁。"},{q:"你有猫吗？",a:"有，两只。"}];
+let i=0,ok=0,manual=[],voted=false,chatHTML="";
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;}
+function art(){const c=tok;$("roomart").innerHTML=`
+ <rect x="20" y="30" width="330" height="170" rx="10" fill="${c('--card')}" stroke="${c('--ink')}" stroke-width="3"/>
+ <text x="36" y="56" font-size="15" font-weight="700" fill="${c('--ink')}">La habitación</text>
+ <rect x="346" y="96" width="8" height="40" fill="${c('--paper')}"/><text x="350" y="160" text-anchor="middle" font-size="12" fill="${c('--soft')}">rendija</text>
+ <circle cx="230" cy="110" r="20" fill="${c('--spark-soft')}" stroke="${c('--ink')}" stroke-width="2.5"/><text x="230" y="117" text-anchor="middle" font-size="18" fill="${c('--ink')}">?</text>
+ <path d="M205 186 Q230 140 255 186" fill="${c('--spark-soft')}" stroke="${c('--ink')}" stroke-width="2.5"/>
+ <text x="230" y="78" text-anchor="middle" font-size="13" fill="${c('--soft')}">tú (no sabes chino)</text>
+ <rect x="70" y="120" width="70" height="56" rx="4" fill="${c('--lab')}"/><rect x="104" y="120" width="2" height="56" fill="${c('--card')}"/>
+ <text x="105" y="152" text-anchor="middle" font-size="12" font-weight="700" fill="${c('--card')}">MANUAL</text>
+ <text x="105" y="104" text-anchor="middle" font-size="13" fill="${c('--soft')}">reglas en castellano</text>
+ <rect x="372" y="98" width="52" height="34" rx="3" fill="${c('--paper')}" stroke="${c('--soft')}" stroke-dasharray="4 3"/><text x="398" y="121" text-anchor="middle" font-size="16" class="zh" fill="${c('--ink')}">你好</text>
+ <circle cx="490" cy="104" r="20" fill="${c('--blue-soft')}" stroke="${c('--ink')}" stroke-width="2.5"/><path d="M465 186 Q490 140 515 186" fill="${c('--blue-soft')}" stroke="${c('--ink')}" stroke-width="2.5"/>
+ <text x="490" y="66" text-anchor="middle" font-size="13" fill="${c('--soft')}">afuera: habla chino</text>`;}
+function start(){i=0;ok=0;manual=shuffle(R.concat(DECOYS));chatHTML="";$("reveal").hidden=true;voted=false;
+  document.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed","false"));$("voteMsg").textContent="";show();}
+function addChat(h){chatHTML+=h;$("chat").innerHTML=chatHTML||'<p class="muted" style="font-size:15px">Aquí verás la conversación tal como la ve la persona de afuera.</p>';}
+function show(){$("round").textContent=`Papel ${i+1} de ${R.length}`;$("score").textContent=`${ok} respuesta${ok===1?"":"s"}`;
+  $("incoming").textContent=R[i].q;$("next").hidden=true;$("look").hidden=false;
+  $("manual").innerHTML=manual.map((r,k)=>`<button class="rule" data-k="${k}"><span class="zh">${r.q}</span><span class="arrow">devuelve</span><span class="zh">${r.a}</span></button>`).join("");
+  addChat(`<div class="msg q zh">${R[i].q}</div>`);G.update({ok,revealed:!$("reveal").hidden,voted});}
+$("manual").addEventListener("click",e=>{const b=e.target.closest(".rule");if(!b||!$("next").hidden)return;const r=manual[+b.dataset.k];
+  if(r.q===R[i].q){b.classList.add("right");ok++;$("score").textContent=`${ok} respuesta${ok===1?"":"s"}`;
+    addChat(`<div class="msg a zh">${r.a}</div><div class="msg r">${R[i].o}</div>`);
+    $("next").hidden=false;$("look").hidden=true;$("next").textContent=i===R.length-1?"Ver la revelación":"Siguiente papel";
+    G.update({ok,revealed:false,voted});}
+  else{b.classList.add("wrong");setTimeout(()=>b.classList.remove("wrong"),800);}});
+$("look").onclick=()=>{const first=[...R[i].q][0];document.querySelectorAll(".rule").forEach(b=>{const r=manual[+b.dataset.k];b.classList.toggle("hinted",[...r.q][0]===first);});};
+$("next").onclick=()=>{if(i<R.length-1){i++;show();}else reveal();};
+function reveal(){$("reveal").hidden=false;
+  $("trans").innerHTML="<thead><tr><th>Te preguntaron</th><th>Significa</th><th>Respondiste</th><th>Significa</th></tr></thead><tbody>"+
+    R.map(r=>`<tr><td class="zh">${r.q}</td><td>${r.qe}</td><td class="zh">${r.a}</td><td><strong>${r.ae}</strong></td></tr>`).join("")+"</tbody>";
+  $("reveal").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});G.update({ok,revealed:true,voted});}
+const VM=["Esa es la conclusión de Searle: el programa mueve símbolos sin saber qué significan.","Es la respuesta más famosa a Searle, la «respuesta del sistema». Él contestó: aunque memorizaras todo el manual, seguirías sin entender chino.","Es una postura muy razonable. Filósofos y científicos todavía discuten qué significa «comprender»."];
+document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-v]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("voteMsg").textContent=VM[+b.dataset.v];voted=true;G.update({ok,revealed:true,voted});});
+$("again").onclick=()=>{start();$("guide").scrollIntoView();};
+const G=Guide($("guide"),{
+  intro:"Hola, soy <strong>Chispa</strong>. Estás encerrado. Por la rendija te van a pasar papeles en chino. Tu único trabajo: buscar en el manual la regla con los mismos símbolos y devolver lo que diga. ¿Listo?",
+  missions:[
+   {text:"Mira el papel que entró. Busca en el manual la regla cuyos símbolos de la izquierda sean <strong>idénticos</strong> y tócala.",hint:"Compara la forma del primer símbolo. Si te cuesta, pulsa «Ayúdame a buscar».",done:s=>s.ok>=1,
+    ok:"¡Perfecto! Mira el lado de «Afuera»: la persona recibió tu respuesta y le pareció normal. ¿Tú sabes qué respondiste? Yo tampoco 😅."},
+   {text:"Responde tres papeles más. Fíjate en cómo trabajas: ¿piensas en lo que significan o solo comparas formas?",hint:"Pulsa «Siguiente papel» y repite: buscar, comparar, tocar.",done:s=>s.ok>=4,
+    ok:"Seguro ya vas más rápido. Pero no aprendiste chino: aprendiste a reconocer <strong>formas</strong>. Eso es justo lo que Searle dice que hace un programa."},
+   {text:"Termina los seis papeles y pulsa <strong>«Ver la revelación»</strong>.",done:s=>s.revealed,
+    ok:"¿Viste lo que dijiste? «No soy una máquina» y «por supuesto que entiendo»... sin entender nada. Pasaste el test de Turing sin saber chino."},
+   {text:"Última misión: responde la gran pregunta. ¿Quién entendía chino en la habitación?",done:s=>s.voted,
+    ok:"No hay una respuesta oficial: el debate sigue abierto, y es más actual que nunca con los chatbots."}],
+  finale:"Viviste el argumento de la habitación china. La próxima vez que una IA te responda con fluidez, recuerda: <strong>responder bien no prueba que entienda</strong>."});
+addChat("");onTheme(art);art();start();
+</script>
+</body></html>

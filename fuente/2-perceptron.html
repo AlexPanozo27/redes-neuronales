@@ -1,0 +1,192 @@
+<title>Perceptrón del paraguas</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#0E7490}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#22D3EE}}
+:root[data-theme="dark"]{--lab:#22D3EE}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs .btn[aria-selected="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.day{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.day>div{background:var(--paper);border-radius:14px;padding:10px;text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center}
+.day .e{font-size:38px;line-height:1.1}
+.day small{color:var(--soft);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.day b{font-size:16px}
+.reason{background:var(--paper);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:17px}
+.calc{font-family:var(--f-mono);font-size:15px;overflow-x:auto;white-space:nowrap}
+.knobs{display:flex;flex-direction:column;gap:10px}
+.k{display:grid;grid-template-columns:minmax(0,12em) minmax(0,1fr) 3.6em;gap:10px;align-items:center;font-size:16px}
+@media (max-width:480px){.k{grid-template-columns:minmax(0,1fr) 3.6em}.k .bar{grid-column:1 / span 2;grid-row:2}}
+.bar{height:16px;border-radius:8px;background:var(--line);position:relative;overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0;left:50%;background:var(--lab);transition:all .3s}
+.bar i.neg{background:var(--bad)}
+.bar::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.4}
+.k .mono{text-align:right;font-weight:700}
+.k.flash .mono{color:var(--spark-ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:680px){.two{grid-template-columns:1fr}}
+#plot{width:100%;max-width:320px;display:block;margin:0 auto}
+svg text{font-family:var(--f-mono)}
+.log{max-height:260px;overflow:auto}
+tr.err td{background:var(--bad-soft)}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 1.2</span>
+      <h1>Enséñale a una neurona a llevar paraguas</h1>
+      <p class="lede">La neurona del laboratorio anterior no aprendía: tú le ponías la marca. En 1958 Frank Rosenblatt inventó el perceptrón, una neurona que aprende de sus errores. Vas a verla aprender, día por día.</p>
+      <div class="meta"><span>⏱ 7 minutos</span><span>Recomendado: haz antes el Laboratorio 1.1</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">☁️📻</span><p>Cada mañana miras dos pistas: si el cielo está <strong>nublado</strong> y si el <strong>pronóstico</strong> anuncia lluvia.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">🎚️</span><p>No les haces el mismo caso a las dos. Cuánto confías en cada pista es su <button class="term" data-def="Un número que dice cuánta importancia tiene una señal. Peso alto: esa señal influye mucho. Peso cero: se ignora. Peso negativo: empuja en contra.">peso</button>.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🌧️😖</span><p>Si un día te mojas, corriges: le das más peso a la pista que tenía razón. Así aprende el perceptrón.</p></div>
+    </div>
+    <div class="prose">
+      <p>El perceptrón hace la misma cuenta que la neurona del 1.1, con una diferencia: cada señal se multiplica por su peso antes de sumarla. Si el resultado alcanza el <button class="term" data-def="La marca que debe alcanzar la suma para decir «sí». En el perceptrón también se ajusta al aprender.">umbral</button>, dice «llevo paraguas».</p>
+      <p>Al principio confía igual en las dos pistas (peso 0,5 cada una). Le mostramos días reales, uno por uno. Cuando acierta, no cambia nada. Cuando se equivoca, mueve sus pesos un poquito, 0,25, en la dirección que lo habría hecho acertar. Este mes, llovió justo los días en que el pronóstico lo anunció. ¿Lo descubrirá?</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="tabs" role="tablist">
+      <button class="btn" role="tab" id="tab-u" aria-selected="true">☂️ ¿Llevo paraguas?</button>
+      <button class="btn" role="tab" id="tab-x" aria-selected="false">💡 Interruptor de escalera</button>
+    </div>
+    <div class="bench">
+      <div class="row" style="justify-content:space-between"><h3 id="exTitle">Listo para empezar</h3><span id="exPill"></span></div>
+      <div class="day" id="day"></div>
+      <div class="reason" id="reason" aria-live="polite"></div>
+      <div class="knobs">
+        <div class="k" id="k0"><span id="l1">Cuánto confía en las nubes</span><div class="bar"><i id="b1"></i></div><span class="mono" id="v1"></span></div>
+        <div class="k" id="k1"><span id="l2">Cuánto confía en el pronóstico</span><div class="bar"><i id="b2"></i></div><span class="mono" id="v2"></span></div>
+        <div class="k" id="k2"><span>Umbral (qué tan exigente es)</span><div class="bar"><i id="b3"></i></div><span class="mono" id="v3"></span></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="step">Mostrar el siguiente día</button>
+        <button class="btn" id="epoch">Una semana completa</button>
+        <button class="btn" id="many">20 semanas de golpe</button>
+        <button class="btn" id="reset">Empezar de cero</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Míralo como un mapa</span>
+    <div class="bench two">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <p>Cada esquina del cuadro es una situación posible: sin pistas, solo nubes, solo pronóstico o las dos. El número es la respuesta correcta.</p>
+        <p>La zona amarilla es donde el perceptrón dice «sí». Su frontera es siempre <strong>una línea recta</strong>: aprender es mover esa línea hasta que deje cada esquina en su lado. Un círculo con borde rojo es una esquina que todavía clasifica mal.</p>
+      </div>
+      <svg viewBox="0 0 260 260" id="plot" role="img" aria-label="Mapa de decisiones con la línea del perceptrón"></svg>
+    </div>
+    <div class="bench">
+      <h3>Errores en cada semana</h3>
+      <svg viewBox="0 0 600 96" id="errs" role="img" aria-label="Errores en cada vuelta de entrenamiento" style="width:100%"></svg>
+      <p id="status" aria-live="polite"></p>
+    </div>
+    <details class="bench"><summary style="cursor:pointer;font-weight:700">Ver el registro de cada día</summary><div class="tablewrap log"><table id="log"></table></div></details>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Aprender es ajustar pesos</b><span>Nadie le dijo que el pronóstico era más fiable. Lo descubrió corrigiendo sus errores.</span></div>
+      <div><b>Error, corrección, repetir</b><span>Este ciclo, repetido millones de veces, es como se entrenan también las redes neuronales modernas.</span></div>
+      <div><b>Una línea recta no basta</b><span>Con el interruptor de escalera no hay línea que funcione. Se necesitan varias neuronas en capas: la idea que revivió las redes en los años 80.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>¿Qué pasaría si el pronóstico de tu ciudad fallara a menudo? ¿Qué pesos crees que aprendería el perceptrón?</p></div>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 1.2.</span><span>Los días de lluvia son inventados para el ejemplo.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+const LR=0.25;
+const TASKS={
+ u:{n1:"Nublado",n2:"Pronóstico",e1:["☀️","☁️"],e2:["📻 sin lluvia","📻 lluvia"],r:["🌤️","🌧️"],l1:"Cuánto confía en las nubes",l2:"Cuánto confía en el pronóstico",yes:"llevar paraguas",no:"no llevar paraguas",unit:"semana",
+    data:[[1,0,0,"Lunes"],[0,1,1,"Martes"],[1,1,1,"Miércoles"],[0,0,0,"Jueves"],[1,0,0,"Viernes"],[0,1,1,"Sábado"],[1,1,1,"Domingo"]]},
+ x:{n1:"Interruptor A",n2:"Interruptor B",e1:["⬇️","⬆️"],e2:["⬇️","⬆️"],r:["🌑","💡"],l1:"Peso del interruptor A",l2:"Peso del interruptor B",yes:"encender la luz",no:"dejarla apagada",unit:"ronda",
+    data:[[0,0,0,"Caso 1"],[0,1,1,"Caso 2"],[1,0,1,"Caso 3"],[1,1,0,"Caso 4"]]}};
+let task="u",S;
+function reset(){S={w:[0.5,0.5],t:0.5,i:0,epoch:1,errs:[],cur:0,log:[],last:null,doneAt:null,steps:0,anyErr:false};render();}
+function predict(x){return x[0]*S.w[0]+x[1]*S.w[1]>=S.t-1e-9?1:0;}
+function step(){const T=TASKS[task],d=T.data[S.i],x=[d[0],d[1]],y=d[2];
+  const s=x[0]*S.w[0]+x[1]*S.w[1],p=s>=S.t-1e-9?1:0,e=y-p,before={w:[...S.w],t:S.t};
+  if(e!==0){S.w[0]+=LR*e*x[0];S.w[1]+=LR*e*x[1];S.t-=LR*e;S.cur++;S.anyErr=true;}
+  S.w=S.w.map(v=>Math.round(v*100)/100);S.t=Math.round(S.t*100)/100;
+  S.last={d,s,p,y,e,before};S.steps++;
+  S.log.unshift({ep:S.epoch,name:d[3],x,p,y,e,w:[...S.w],t:S.t});if(S.log.length>200)S.log.pop();
+  S.i++;if(S.i>=T.data.length){S.errs.push(S.cur);if(S.cur===0&&S.doneAt===null)S.doneAt=S.epoch;S.cur=0;S.i=0;S.epoch++;}}
+function runEpoch(){const n=TASKS[task].data.length;let k=S.i===0?n:n-S.i;while(k--)step();}
+const fmt=v=>v.toFixed(2).replace(".",",");
+function render(){
+  const T=TASKS[task],L=S.last;
+  $("l1").textContent=T.l1;$("l2").textContent=T.l2;
+  [[S.w[0],"b1","v1","k0"],[S.w[1],"b2","v2","k1"],[S.t,"b3","v3","k2"]].forEach(([v,b,l,k],j)=>{const el=$(b),pct=Math.min(50,Math.abs(v)/2*50);
+    el.className=v<0?"neg":"";el.style.left=v<0?(50-pct)+"%":"50%";el.style.width=pct+"%";$(l).textContent=fmt(v);
+    const changed=L&&L.e!==0&&((j<2&&L.d[j])||j===2);$(k).classList.toggle("flash",!!changed);});
+  if(!L){$("exTitle").textContent=task==="u"?"Antes del primer día":"Antes del primer caso";$("exPill").innerHTML="";
+    $("day").innerHTML=`<div><span class="e">🤔</span><small>Pesos</small><b>0,5 y 0,5</b></div><div><span class="e">⚖️</span><small>Umbral</small><b>0,5</b></div><div><span class="e">📚</span><small>Ejemplos</small><b>${T.data.length} por ${T.unit}</b></div>`;
+    $("reason").innerHTML="Todavía no vio ningún ejemplo. Confía lo mismo en las dos pistas. Pulsa <strong>«Mostrar el siguiente día»</strong>.";}
+  else{const d=L.d;$("exTitle").textContent=d[3];
+    $("exPill").innerHTML=L.e===0?'<span class="pill ok">acertó</span>':'<span class="pill bad">se equivocó</span>';
+    $("day").innerHTML=`<div><span class="e">${T.e1[d[0]]}</span><small>${T.n1}</small><b>${d[0]?"sí · 1":"no · 0"}</b></div>
+      <div><span class="e">${T.e2[d[1]].split(" ")[0]}</span><small>${T.n2}</small><b>${task==="u"?(d[1]?"anuncia lluvia · 1":"no anuncia · 0"):(d[1]?"arriba · 1":"abajo · 0")}</b></div>
+      <div><span class="e">${T.r[d[2]]}</span><small>Lo correcto</small><b>${d[2]?T.yes:T.no}</b></div>`;
+    const b=L.before;
+    $("reason").innerHTML=`<span class="calc">${d[0]} × ${fmt(b.w[0])} + ${d[1]} × ${fmt(b.w[1])} = ${fmt(L.s)} ${L.p?"≥":"<"} umbral ${fmt(b.t)}</span>
+      <span>Decidió <strong>${L.p?T.yes:T.no}</strong>. ${L.e===0?"Acertó, así que no toca nada.":
+      L.e>0?`Debía decir «sí». Corrige: <strong>sube</strong> el peso de las pistas que estaban encendidas y <strong>baja</strong> el umbral para ser menos exigente.`:
+      `Debía decir «no». Corrige: <strong>baja</strong> el peso de las pistas que estaban encendidas y <strong>sube</strong> el umbral para ser más exigente.`}</span>`;}
+  drawPlot();drawErrs();
+  const ep=S.errs.length;
+  if(S.doneAt!==null)$("status").innerHTML=`<span class="pill ok">aprendió</span> Desde la ${T.unit} ${S.doneAt} no se equivoca. ${task==="u"?"El peso del pronóstico quedó más alto que el de las nubes: descubrió en qué pista confiar.":""}`;
+  else if(task==="x"&&ep>=6)$("status").innerHTML=`<span class="pill bad">no aprende</span> Van ${ep} rondas y sigue fallando en todas. Los pesos suben y bajan dando vueltas: ninguna línea recta separa los casos.`;
+  else $("status").textContent=ep?`La ${T.unit} ${ep} terminó con ${S.errs[ep-1]} error(es).`:`Cuando termine la primera ${T.unit} aparecerá aquí una barra.`;
+  $("log").innerHTML=`<thead><tr><th>${T.unit}</th><th>Ejemplo</th><th>${T.n1}</th><th>${T.n2}</th><th>Dijo</th><th>Correcto</th><th>Pesos después</th><th>Umbral</th></tr></thead><tbody>`+
+    (S.log.length?S.log.map(r=>`<tr class="${r.e?"err":""}"><td class="mono">${r.ep}</td><td>${r.name}</td><td class="mono">${r.x[0]}</td><td class="mono">${r.x[1]}</td><td class="mono">${r.p}</td><td class="mono">${r.y}</td><td class="mono">${fmt(r.w[0])} · ${fmt(r.w[1])}</td><td class="mono">${fmt(r.t)}</td></tr>`).join(""):`<tr><td colspan="8">Aún no hay días. Los errores aparecerán en rojo.</td></tr>`)+"</tbody>";
+  G.update({task,steps:S.steps,anyErr:S.anyErr,doneAt:S.doneAt,epochs:S.errs.length});
+}
+function drawPlot(){const T=TASKS[task],P=v=>44+v*176,Q=v=>216-v*176;let g="";
+  const N=34,cs=176*1.4/N;for(let a=0;a<N;a++)for(let b=0;b<N;b++){const x=-0.2+1.4*(a+.5)/N,y=-0.2+1.4*(b+.5)/N;
+    if(x*S.w[0]+y*S.w[1]>=S.t)g+=`<rect x="${P(x)-cs/2}" y="${Q(y)-cs/2}" width="${cs+.4}" height="${cs+.4}" fill="${tok('--spark-soft')}"/>`;}
+  const [a,b]=S.w,t=S.t;let pts=[];
+  if(Math.abs(b)>1e-6)[-0.2,1.2].forEach(x=>pts.push([x,(t-a*x)/b]));else if(Math.abs(a)>1e-6)pts=[[t/a,-0.2],[t/a,1.2]];
+  if(pts.length)g+=`<line x1="${P(pts[0][0])}" y1="${Q(pts[0][1])}" x2="${P(pts[1][0])}" y2="${Q(pts[1][1])}" stroke="${tok('--spark')}" stroke-width="3"/>`;
+  g+=`<rect x="0" y="0" width="260" height="260" fill="none"/><line x1="44" y1="216" x2="236" y2="216" stroke="${tok('--soft')}"/><line x1="44" y1="216" x2="44" y2="24" stroke="${tok('--soft')}"/>`;
+  g+=`<text x="140" y="248" text-anchor="middle" font-size="12" fill="${tok('--soft')}">${T.n1} →</text><text x="16" y="120" text-anchor="middle" font-size="12" fill="${tok('--soft')}" transform="rotate(-90 16 120)">${T.n2} →</text>`;
+  [[0,0],[0,1],[1,0],[1,1]].forEach(([x,y])=>{const d=T.data.find(r=>r[0]===x&&r[1]===y);if(!d)return;const ok=predict([x,y])===d[2];
+    g+=`<circle cx="${P(x)}" cy="${Q(y)}" r="15" fill="${d[2]?tok('--lab'):tok('--card')}" stroke="${ok?tok('--lab'):tok('--bad')}" stroke-width="${ok?2.5:5}"/>`;
+    g+=`<text x="${P(x)}" y="${Q(y)+5}" text-anchor="middle" font-size="13" font-weight="700" fill="${d[2]?tok('--card'):tok('--lab')}">${d[2]}</text>`;});
+  $("plot").innerHTML=g;}
+function drawErrs(){const e=S.errs.slice(-30),max=TASKS[task].data.length;let g="";
+  if(!e.length)g=`<text x="0" y="50" font-size="14" fill="${tok('--soft')}">Aún no hay ${TASKS[task].unit}s completas.</text>`;
+  e.forEach((v,i)=>{const h=v/max*62;g+=`<rect x="${i*20}" y="${72-h}" width="14" height="${Math.max(h,2)}" rx="2" fill="${v?tok('--bad'):tok('--ok')}"/><text x="${i*20+7}" y="90" text-anchor="middle" font-size="10" fill="${tok('--soft')}">${S.errs.length-e.length+i+1}</text>`;});
+  $("errs").innerHTML=g;}
+const G=Guide($("guide"),{
+  intro:"Hola, soy <strong>Chispa</strong>. Hoy no me vas a decir la marca: voy a <strong>aprenderla yo</strong>. Muéstrame días y mira cómo cambian las barras de confianza.",
+  missions:[
+   {text:"Pulsa <strong>«Mostrar el siguiente día»</strong> para enseñarme el lunes.",hint:"Es el botón azul debajo de las barras.",
+    done:s=>s.task==="u"&&s.steps>=1,ok:"El lunes estaba nublado, así que mi cuenta dio 0,5: alcancé el umbral y dije «paraguas». Pero no llovió. Me equivoqué, así que <strong>bajé mi confianza en las nubes</strong> y me volví más exigente. ¿Ves cómo cambiaron las barras?"},
+   {text:"Sigue mostrándome días hasta que vuelva a equivocarme y mira <strong>qué barra cambia</strong>.",hint:"Pulsa «Mostrar el siguiente día» varias veces. El martes es interesante.",
+    done:s=>s.task==="u"&&s.steps>=2,ok:"El martes el pronóstico anunció lluvia, no le hice caso y me mojé 🌧️. Ahora <strong>confío más en el pronóstico</strong>. Fíjate: cada error mueve los pesos solo un poquito."},
+   {text:"Enséñame semanas completas hasta que pase una <strong>semana entera sin errores</strong>.",hint:"Usa «Una semana completa». Mira la barra verde en «Errores en cada semana».",
+    done:s=>s.task==="u"&&s.doneAt!==null,ok:"¡Aprendí! Ahora mi confianza en el pronóstico es mucho mayor que en las nubes. Nadie me lo dijo: lo descubrí equivocándome. En el mapa, mi línea separa bien las cuatro esquinas."},
+   {text:"Cambia a la pestaña <strong>💡 Interruptor de escalera</strong> y entréname <strong>20 semanas de golpe</strong>.",hint:"La luz se enciende si está arriba exactamente uno de los dos interruptores. Es el XOR del Laboratorio 1.1.",
+    done:s=>s.task==="x"&&s.epochs>=10,ok:"Por más que practico, no aprendo 😵. En el mapa, las esquinas con 1 están en diagonal: ninguna línea recta las separa de las de 0. Minsky y Papert lo demostraron en 1969, y casi nadie quiso estudiar redes neuronales por más de una década."}],
+  finale:"Viste a una neurona <strong>aprender de sus errores</strong> y también chocar con su límite. Para superarlo hacen falta varias neuronas en capas, que se entrenan con la misma idea: equivocarse y corregir."});
+function setTask(t){task=t;$("tab-u").setAttribute("aria-selected",t==="u");$("tab-x").setAttribute("aria-selected",t==="x");
+  $("step").textContent=t==="u"?"Mostrar el siguiente día":"Mostrar el siguiente caso";$("epoch").textContent=t==="u"?"Una semana completa":"Una ronda completa";$("many").textContent=t==="u"?"20 semanas de golpe":"20 rondas de golpe";reset();}
+$("tab-u").onclick=()=>setTask("u");$("tab-x").onclick=()=>setTask("x");
+$("step").onclick=()=>{step();render();};$("epoch").onclick=()=>{runEpoch();render();};
+$("many").onclick=()=>{for(let k=0;k<20;k++)runEpoch();render();};$("reset").onclick=reset;
+onTheme(render);reset();
+</script>

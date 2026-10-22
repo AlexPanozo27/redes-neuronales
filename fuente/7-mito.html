@@ -1,0 +1,126 @@
+<title>¿Mito o realidad?</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#C2410C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#FB923C}}
+:root[data-theme="dark"]{--lab:#FB923C}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.how{grid-template-columns:1fr}}
+.prog{display:flex;gap:4px}
+.prog i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.prog i.ok{background:var(--ok)} .prog i.bad{background:var(--bad)} .prog i.cur{background:var(--lab)}
+.stage{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:480px){.stage{grid-template-columns:64px minmax(0,1fr)}}
+.claimcard{background:var(--card);border:3px solid var(--ink);border-radius:18px;padding:18px;box-shadow:6px 6px 0 var(--ink);position:relative}
+.claimcard::before{content:"";position:absolute;left:-13px;top:28px;width:20px;height:20px;background:var(--card);border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.claim{font-family:var(--f-display);font-size:clamp(23px,5.5vw,32px);font-weight:700;line-height:1.2;text-wrap:balance}
+.claimcard small{font:700 12px var(--f-mono);color:var(--soft);letter-spacing:.05em;text-transform:uppercase}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.answers .btn{min-height:64px;font-size:19px;border-width:3px}
+.answers .btn.sel-ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.answers .btn.sel-bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.expl{display:flex;flex-direction:column;gap:8px;background:var(--paper);border-radius:14px;padding:14px}
+.expl .v{font-family:var(--f-display);font-size:22px;font-weight:700}
+.big{font:800 64px var(--f-display);line-height:1;color:var(--lab)}
+.diploma{border:3px double var(--lab);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;background:var(--card)}
+.review{display:flex;flex-direction:column;gap:8px}
+.review div{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:10px;align-items:baseline;font-size:16px}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 2.4</span>
+      <h1>¿Mito o realidad?</h1>
+      <p class="lede">Sobre la inteligencia artificial se dicen muchas cosas: algunas vienen del cine, otras de la publicidad y otras son ciertas. Con lo que leíste en el Capítulo I, ¿sabes separarlas?</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>12 afirmaciones, en orden distinto cada vez</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Cómo se juega</span>
+    <div class="how">
+      <div class="panel"><span class="n">1</span><p>Lee la afirmación que dice Chispa.</p></div>
+      <div class="panel"><span class="n">2</span><p>Decide: ¿es un <strong>mito</strong> (algo que mucha gente cree, pero es falso) o una <strong>realidad</strong>?</p></div>
+      <div class="panel"><span class="n">3</span><p>Lee la explicación y la sección del libro donde se habla del tema.</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="quiz">
+    <div class="bench">
+      <div class="prog" id="prog" aria-hidden="true"></div>
+      <div class="row" style="justify-content:space-between"><span class="muted mono" id="num"></span><span class="pill" id="pts"></span></div>
+      <div class="stage">
+        <div id="face"></div>
+        <div class="claimcard"><small>Chispa escuchó por ahí que...</small><p class="claim" id="claim"></p></div>
+      </div>
+      <div class="answers">
+        <button class="btn" id="a-m">🧪 Mito</button>
+        <button class="btn" id="a-r">✅ Realidad</button>
+      </div>
+      <div class="expl" id="expl" aria-live="polite" hidden>
+        <span class="v" id="verdict"></span>
+        <p id="why"></p>
+        <p class="muted" id="sec" style="font-size:15px"></p>
+        <div><button class="btn primary" id="next">Siguiente</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="end" hidden>
+    <div class="diploma">
+      <div data-chispa="wow" style="width:96px"></div>
+      <span class="kicker">Resultado</span>
+      <span class="big mono" id="final"></span>
+      <h2 id="title"></h2>
+      <p id="finalMsg" style="max-width:48ch"></p>
+      <button class="btn primary" id="again">Jugar otra vez</button>
+    </div>
+    <div class="bench"><h3>Repaso de las doce</h3><div class="review" id="review"></div></div>
+  </section>
+
+  <section class="sec">
+    <div class="think"><b>Para pensar</b><p>¿Cuál de estos mitos escuchaste más veces? ¿De dónde crees que viene: del cine, de la publicidad o de las noticias?</p></div>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 2.4.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+const Q=[
+ ["La IA piensa y siente como un ser humano.",0,"Los sistemas actuales encuentran patrones en los datos. No tienen emociones ni conciencia. Si un asistente escribe «me alegra ayudarte», es porque aprendió que esa frase encaja, no porque sienta alegría.","Sección 2.4 y el efecto ELIZA, sección 1.2"],
+ ["Inteligencia artificial es lo mismo que ChatGPT.",0,"Los chatbots son solo una aplicación. También son IA el filtro de spam, el GPS que calcula rutas y los sistemas que detectan fraudes en el banco. La IA existe desde 1956; ChatGPT apareció en 2022.","Sección 2.4"],
+ ["La IA es objetiva porque es una máquina.",0,"Aprende de datos creados por personas, y esos datos pueden tener prejuicios. Si se entrena con contrataciones pasadas injustas, repetirá esa injusticia.","Sección 2.4"],
+ ["Si lo dice la IA, debe ser verdad.",0,"Los modelos generativos pueden «alucinar»: inventan fechas, nombres o fuentes con total seguridad, porque producen lo probable y no necesariamente lo verdadero. Lo viste en el Laboratorio 2.3.","Secciones 2.3 y 2.4"],
+ ["La IA aprende sola, sin ninguna ayuda humana.",0,"Hay personas que reúnen y etiquetan datos, diseñan la red, deciden cómo medir el error y revisan los resultados. Hasta los grandes modelos se mejoran con evaluaciones humanas.","Sección 2.4"],
+ ["Para entender la IA hay que ser un genio de las matemáticas.",0,"Las ideas centrales se entienden con ejemplos cotidianos, como la neurona que decide si cruzar la calle o el perceptrón que aprende a llevar paraguas. ¡Ya lo comprobaste!","Secciones 1.1, 1.2 y 2.4"],
+ ["La inteligencia artificial existe desde mucho antes que ChatGPT.",1,"El nombre nació en la conferencia de Dartmouth en 1956, y la primera neurona artificial es de 1943.","Sección 1.1"],
+ ["Un modelo de lenguaje escribe prediciendo, una tras otra, la palabra más probable.",1,"Calcula qué tan probable es cada palabra como continuación, elige una con algo de azar (la temperatura) y repite.","Sección 2.3"],
+ ["Una sola neurona simple no puede aprender el «interruptor de escalera» (XOR).",1,"Solo puede separar los casos con una línea recta, y ninguna línea recta separa los casos del XOR. Hacen falta varias neuronas en capas.","Sección 1.2"],
+ ["Muchos modelos de IA saben poco aymara o quechua porque hay pocos textos digitales en esos idiomas.",1,"Son lenguas de pocos recursos para la IA. No es por falta de riqueza del idioma, sino por la poca cantidad de datos digitales disponibles.","Sección 1.3"],
+ ["Toda la IA que existe hoy es IA débil.",1,"Puede ser excelente en las tareas para las que se entrenó, pero ninguna comprende el mundo como una persona. La IA fuerte sigue siendo una pregunta abierta.","Sección 2.1"],
+ ["Las personas solemos creer que un programa nos entiende aunque solo siga patrones.",1,"Se llama efecto ELIZA, por el programa de Joseph Weizenbaum de 1966 que imitaba a una psicoterapeuta buscando palabras clave.","Sección 1.2"]];
+let order,i,res;
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function face(m){$("face").innerHTML=chispaSVG(m);$("face").classList.remove("wob");void $("face").offsetWidth;$("face").classList.add("wob");}
+function start(){order=shuffle(Q);i=0;res=[];$("quiz").hidden=false;$("end").hidden=true;show();}
+function show(){const q=order[i];$("num").textContent=`Afirmación ${i+1} de ${order.length}`;$("pts").textContent=`${res.filter(Boolean).length} aciertos`;
+  $("claim").textContent="«"+q[0]+"»";$("expl").hidden=true;face("think");
+  ["a-m","a-r"].forEach(id=>{$(id).disabled=false;$(id).className="btn";});
+  $("prog").innerHTML=order.map((_,k)=>`<i class="${k<i?(res[k]?"ok":"bad"):k===i?"cur":""}"></i>`).join("");}
+function answer(v){const q=order[i],ok=v===q[1];res.push(ok);
+  $(v?"a-r":"a-m").classList.add(ok?"sel-ok":"sel-bad");$("a-m").disabled=$("a-r").disabled=true;face(ok?"happy":"sad");
+  $("verdict").textContent=(ok?"¡Correcto! ":"¡Uy, no! ")+(q[1]?"Es una realidad.":"Es un mito.");
+  $("why").textContent=q[2];$("sec").textContent="En el libro: "+q[3]+".";$("expl").hidden=false;
+  $("next").textContent=i===order.length-1?"Ver mi resultado":"Siguiente";$("next").focus();$("pts").textContent=`${res.filter(Boolean).length} aciertos`;
+  $("prog").innerHTML=order.map((_,k)=>`<i class="${k<=i?(res[k]?"ok":"bad"):""}"></i>`).join("");}
+$("a-m").onclick=()=>answer(0);$("a-r").onclick=()=>answer(1);
+$("next").onclick=()=>{if(i<order.length-1){i++;show();}else end();};
+function end(){const n=res.filter(Boolean).length;$("quiz").hidden=true;$("end").hidden=false;$("final").textContent=`${n}/${order.length}`;
+  $("title").textContent=n>=11?"Cazador de mitos":n>=8?"Buen detector":"Aprendiz curioso";
+  $("finalMsg").textContent=n>=11?"Separas muy bien lo que la IA es de lo que se dice de ella. Comparte el juego y reta a alguien.":n>=8?"Muy bien. Revisa abajo las que fallaste y la sección donde se explican.":"Buen comienzo. Vuelve a las secciones indicadas abajo y juega otra vez.";
+  $("review").innerHTML=order.map((q,k)=>`<div><span class="pill ${res[k]?"ok":"bad"}">${q[1]?"realidad":"mito"}</span><span>${q[0]} <span class="muted">(${q[3]})</span></span></div>`).join("");
+  $("end").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});}
+$("again").onclick=()=>{start();$("quiz").scrollIntoView();};
+start();
+</script>

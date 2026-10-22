@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>Perceptrón del paraguas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#0E7490}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#22D3EE}}
+:root[data-theme="dark"]{--lab:#22D3EE}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs .btn[aria-selected="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.day{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.day>div{background:var(--paper);border-radius:14px;padding:10px;text-align:center;display:flex;flex-direction:column;gap:2px;align-items:center}
+.day .e{font-size:38px;line-height:1.1}
+.day small{color:var(--soft);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.day b{font-size:16px}
+.reason{background:var(--paper);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:17px}
+.calc{font-family:var(--f-mono);font-size:15px;overflow-x:auto;white-space:nowrap}
+.knobs{display:flex;flex-direction:column;gap:10px}
+.k{display:grid;grid-template-columns:minmax(0,12em) minmax(0,1fr) 3.6em;gap:10px;align-items:center;font-size:16px}
+@media (max-width:480px){.k{grid-template-columns:minmax(0,1fr) 3.6em}.k .bar{grid-column:1 / span 2;grid-row:2}}
+.bar{height:16px;border-radius:8px;background:var(--line);position:relative;overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0;left:50%;background:var(--lab);transition:all .3s}
+.bar i.neg{background:var(--bad)}
+.bar::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.4}
+.k .mono{text-align:right;font-weight:700}
+.k.flash .mono{color:var(--spark-ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:680px){.two{grid-template-columns:1fr}}
+#plot{width:100%;max-width:320px;display:block;margin:0 auto}
+svg text{font-family:var(--f-mono)}
+.log{max-height:260px;overflow:auto}
+tr.err td{background:var(--bad-soft)}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 1.2</span>
+      <h1>Enséñale a una neurona a llevar paraguas</h1>
+      <p class="lede">La neurona del laboratorio anterior no aprendía: tú le ponías la marca. En 1958 Frank Rosenblatt inventó el perceptrón, una neurona que aprende de sus errores. Vas a verla aprender, día por día.</p>
+      <div class="meta"><span>⏱ 7 minutos</span><span>Recomendado: haz antes el Laboratorio 1.1</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">☁️📻</span><p>Cada mañana miras dos pistas: si el cielo está <strong>nublado</strong> y si el <strong>pronóstico</strong> anuncia lluvia.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">🎚️</span><p>No les haces el mismo caso a las dos. Cuánto confías en cada pista es su <button class="term" data-def="Un número que dice cuánta importancia tiene una señal. Peso alto: esa señal influye mucho. Peso cero: se ignora. Peso negativo: empuja en contra.">peso</button>.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🌧️😖</span><p>Si un día te mojas, corriges: le das más peso a la pista que tenía razón. Así aprende el perceptrón.</p></div>
+    </div>
+    <div class="prose">
+      <p>El perceptrón hace la misma cuenta que la neurona del 1.1, con una diferencia: cada señal se multiplica por su peso antes de sumarla. Si el resultado alcanza el <button class="term" data-def="La marca que debe alcanzar la suma para decir «sí». En el perceptrón también se ajusta al aprender.">umbral</button>, dice «llevo paraguas».</p>
+      <p>Al principio confía igual en las dos pistas (peso 0,5 cada una). Le mostramos días reales, uno por uno. Cuando acierta, no cambia nada. Cuando se equivoca, mueve sus pesos un poquito, 0,25, en la dirección que lo habría hecho acertar. Este mes, llovió justo los días en que el pronóstico lo anunció. ¿Lo descubrirá?</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="tabs" role="tablist">
+      <button class="btn" role="tab" id="tab-u" aria-selected="true">☂️ ¿Llevo paraguas?</button>
+      <button class="btn" role="tab" id="tab-x" aria-selected="false">💡 Interruptor de escalera</button>
+    </div>
+    <div class="bench">
+      <div class="row" style="justify-content:space-between"><h3 id="exTitle">Listo para empezar</h3><span id="exPill"></span></div>
+      <div class="day" id="day"></div>
+      <div class="reason" id="reason" aria-live="polite"></div>
+      <div class="knobs">
+        <div class="k" id="k0"><span id="l1">Cuánto confía en las nubes</span><div class="bar"><i id="b1"></i></div><span class="mono" id="v1"></span></div>
+        <div class="k" id="k1"><span id="l2">Cuánto confía en el pronóstico</span><div class="bar"><i id="b2"></i></div><span class="mono" id="v2"></span></div>
+        <div class="k" id="k2"><span>Umbral (qué tan exigente es)</span><div class="bar"><i id="b3"></i></div><span class="mono" id="v3"></span></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="step">Mostrar el siguiente día</button>
+        <button class="btn" id="epoch">Una semana completa</button>
+        <button class="btn" id="many">20 semanas de golpe</button>
+        <button class="btn" id="reset">Empezar de cero</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Míralo como un mapa</span>
+    <div class="bench two">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <p>Cada esquina del cuadro es una situación posible: sin pistas, solo nubes, solo pronóstico o las dos. El número es la respuesta correcta.</p>
+        <p>La zona amarilla es donde el perceptrón dice «sí». Su frontera es siempre <strong>una línea recta</strong>: aprender es mover esa línea hasta que deje cada esquina en su lado. Un círculo con borde rojo es una esquina que todavía clasifica mal.</p>
+      </div>
+      <svg viewBox="0 0 260 260" id="plot" role="img" aria-label="Mapa de decisiones con la línea del perceptrón"></svg>
+    </div>
+    <div class="bench">
+      <h3>Errores en cada semana</h3>
+      <svg viewBox="0 0 600 96" id="errs" role="img" aria-label="Errores en cada vuelta de entrenamiento" style="width:100%"></svg>
+      <p id="status" aria-live="polite"></p>
+    </div>
+    <details class="bench"><summary style="cursor:pointer;font-weight:700">Ver el registro de cada día</summary><div class="tablewrap log"><table id="log"></table></div></details>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Aprender es ajustar pesos</b><span>Nadie le dijo que el pronóstico era más fiable. Lo descubrió corrigiendo sus errores.</span></div>
+      <div><b>Error, corrección, repetir</b><span>Este ciclo, repetido millones de veces, es como se entrenan también las redes neuronales modernas.</span></div>
+      <div><b>Una línea recta no basta</b><span>Con el interruptor de escalera no hay línea que funcione. Se necesitan varias neuronas en capas: la idea que revivió las redes en los años 80.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>¿Qué pasaría si el pronóstico de tu ciudad fallara a menudo? ¿Qué pesos crees que aprendería el perceptrón?</p></div>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../neurona/">← 1.1</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../lenguas/">1.3 →</a></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 1.2.</span><span>Los días de lluvia son inventados para el ejemplo.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+const LR=0.25;
+const TASKS={
+ u:{n1:"Nublado",n2:"Pronóstico",e1:["☀️","☁️"],e2:["📻 sin lluvia","📻 lluvia"],r:["🌤️","🌧️"],l1:"Cuánto confía en las nubes",l2:"Cuánto confía en el pronóstico",yes:"llevar paraguas",no:"no llevar paraguas",unit:"semana",
+    data:[[1,0,0,"Lunes"],[0,1,1,"Martes"],[1,1,1,"Miércoles"],[0,0,0,"Jueves"],[1,0,0,"Viernes"],[0,1,1,"Sábado"],[1,1,1,"Domingo"]]},
+ x:{n1:"Interruptor A",n2:"Interruptor B",e1:["⬇️","⬆️"],e2:["⬇️","⬆️"],r:["🌑","💡"],l1:"Peso del interruptor A",l2:"Peso del interruptor B",yes:"encender la luz",no:"dejarla apagada",unit:"ronda",
+    data:[[0,0,0,"Caso 1"],[0,1,1,"Caso 2"],[1,0,1,"Caso 3"],[1,1,0,"Caso 4"]]}};
+let task="u",S;
+function reset(){S={w:[0.5,0.5],t:0.5,i:0,epoch:1,errs:[],cur:0,log:[],last:null,doneAt:null,steps:0,anyErr:false};render();}
+function predict(x){return x[0]*S.w[0]+x[1]*S.w[1]>=S.t-1e-9?1:0;}
+function step(){const T=TASKS[task],d=T.data[S.i],x=[d[0],d[1]],y=d[2];
+  const s=x[0]*S.w[0]+x[1]*S.w[1],p=s>=S.t-1e-9?1:0,e=y-p,before={w:[...S.w],t:S.t};
+  if(e!==0){S.w[0]+=LR*e*x[0];S.w[1]+=LR*e*x[1];S.t-=LR*e;S.cur++;S.anyErr=true;}
+  S.w=S.w.map(v=>Math.round(v*100)/100);S.t=Math.round(S.t*100)/100;
+  S.last={d,s,p,y,e,before};S.steps++;
+  S.log.unshift({ep:S.epoch,name:d[3],x,p,y,e,w:[...S.w],t:S.t});if(S.log.length>200)S.log.pop();
+  S.i++;if(S.i>=T.data.length){S.errs.push(S.cur);if(S.cur===0&&S.doneAt===null)S.doneAt=S.epoch;S.cur=0;S.i=0;S.epoch++;}}
+function runEpoch(){const n=TASKS[task].data.length;let k=S.i===0?n:n-S.i;while(k--)step();}
+const fmt=v=>v.toFixed(2).replace(".",",");
+function render(){
+  const T=TASKS[task],L=S.last;
+  $("l1").textContent=T.l1;$("l2").textContent=T.l2;
+  [[S.w[0],"b1","v1","k0"],[S.w[1],"b2","v2","k1"],[S.t,"b3","v3","k2"]].forEach(([v,b,l,k],j)=>{const el=$(b),pct=Math.min(50,Math.abs(v)/2*50);
+    el.className=v<0?"neg":"";el.style.left=v<0?(50-pct)+"%":"50%";el.style.width=pct+"%";$(l).textContent=fmt(v);
+    const changed=L&&L.e!==0&&((j<2&&L.d[j])||j===2);$(k).classList.toggle("flash",!!changed);});
+  if(!L){$("exTitle").textContent=task==="u"?"Antes del primer día":"Antes del primer caso";$("exPill").innerHTML="";
+    $("day").innerHTML=`<div><span class="e">🤔</span><small>Pesos</small><b>0,5 y 0,5</b></div><div><span class="e">⚖️</span><small>Umbral</small><b>0,5</b></div><div><span class="e">📚</span><small>Ejemplos</small><b>${T.data.length} por ${T.unit}</b></div>`;
+    $("reason").innerHTML="Todavía no vio ningún ejemplo. Confía lo mismo en las dos pistas. Pulsa <strong>«Mostrar el siguiente día»</strong>.";}
+  else{const d=L.d;$("exTitle").textContent=d[3];
+    $("exPill").innerHTML=L.e===0?'<span class="pill ok">acertó</span>':'<span class="pill bad">se equivocó</span>';
+    $("day").innerHTML=`<div><span class="e">${T.e1[d[0]]}</span><small>${T.n1}</small><b>${d[0]?"sí · 1":"no · 0"}</b></div>
+      <div><span class="e">${T.e2[d[1]].split(" ")[0]}</span><small>${T.n2}</small><b>${task==="u"?(d[1]?"anuncia lluvia · 1":"no anuncia · 0"):(d[1]?"arriba · 1":"abajo · 0")}</b></div>
+      <div><span class="e">${T.r[d[2]]}</span><small>Lo correcto</small><b>${d[2]?T.yes:T.no}</b></div>`;
+    const b=L.before;
+    $("reason").innerHTML=`<span class="calc">${d[0]} × ${fmt(b.w[0])} + ${d[1]} × ${fmt(b.w[1])} = ${fmt(L.s)} ${L.p?"≥":"<"} umbral ${fmt(b.t)}</span>
+      <span>Decidió <strong>${L.p?T.yes:T.no}</strong>. ${L.e===0?"Acertó, así que no toca nada.":
+      L.e>0?`Debía decir «sí». Corrige: <strong>sube</strong> el peso de las pistas que estaban encendidas y <strong>baja</strong> el umbral para ser menos exigente.`:
+      `Debía decir «no». Corrige: <strong>baja</strong> el peso de las pistas que estaban encendidas y <strong>sube</strong> el umbral para ser más exigente.`}</span>`;}
+  drawPlot();drawErrs();
+  const ep=S.errs.length;
+  if(S.doneAt!==null)$("status").innerHTML=`<span class="pill ok">aprendió</span> Desde la ${T.unit} ${S.doneAt} no se equivoca. ${task==="u"?"El peso del pronóstico quedó más alto que el de las nubes: descubrió en qué pista confiar.":""}`;
+  else if(task==="x"&&ep>=6)$("status").innerHTML=`<span class="pill bad">no aprende</span> Van ${ep} rondas y sigue fallando en todas. Los pesos suben y bajan dando vueltas: ninguna línea recta separa los casos.`;
+  else $("status").textContent=ep?`La ${T.unit} ${ep} terminó con ${S.errs[ep-1]} error(es).`:`Cuando termine la primera ${T.unit} aparecerá aquí una barra.`;
+  $("log").innerHTML=`<thead><tr><th>${T.unit}</th><th>Ejemplo</th><th>${T.n1}</th><th>${T.n2}</th><th>Dijo</th><th>Correcto</th><th>Pesos después</th><th>Umbral</th></tr></thead><tbody>`+
+    (S.log.length?S.log.map(r=>`<tr class="${r.e?"err":""}"><td class="mono">${r.ep}</td><td>${r.name}</td><td class="mono">${r.x[0]}</td><td class="mono">${r.x[1]}</td><td class="mono">${r.p}</td><td class="mono">${r.y}</td><td class="mono">${fmt(r.w[0])} · ${fmt(r.w[1])}</td><td class="mono">${fmt(r.t)}</td></tr>`).join(""):`<tr><td colspan="8">Aún no hay días. Los errores aparecerán en rojo.</td></tr>`)+"</tbody>";
+  G.update({task,steps:S.steps,anyErr:S.anyErr,doneAt:S.doneAt,epochs:S.errs.length});
+}
+function drawPlot(){const T=TASKS[task],P=v=>44+v*176,Q=v=>216-v*176;let g="";
+  const N=34,cs=176*1.4/N;for(let a=0;a<N;a++)for(let b=0;b<N;b++){const x=-0.2+1.4*(a+.5)/N,y=-0.2+1.4*(b+.5)/N;
+    if(x*S.w[0]+y*S.w[1]>=S.t)g+=`<rect x="${P(x)-cs/2}" y="${Q(y)-cs/2}" width="${cs+.4}" height="${cs+.4}" fill="${tok('--spark-soft')}"/>`;}
+  const [a,b]=S.w,t=S.t;let pts=[];
+  if(Math.abs(b)>1e-6)[-0.2,1.2].forEach(x=>pts.push([x,(t-a*x)/b]));else if(Math.abs(a)>1e-6)pts=[[t/a,-0.2],[t/a,1.2]];
+  if(pts.length)g+=`<line x1="${P(pts[0][0])}" y1="${Q(pts[0][1])}" x2="${P(pts[1][0])}" y2="${Q(pts[1][1])}" stroke="${tok('--spark')}" stroke-width="3"/>`;
+  g+=`<rect x="0" y="0" width="260" height="260" fill="none"/><line x1="44" y1="216" x2="236" y2="216" stroke="${tok('--soft')}"/><line x1="44" y1="216" x2="44" y2="24" stroke="${tok('--soft')}"/>`;
+  g+=`<text x="140" y="248" text-anchor="middle" font-size="12" fill="${tok('--soft')}">${T.n1} →</text><text x="16" y="120" text-anchor="middle" font-size="12" fill="${tok('--soft')}" transform="rotate(-90 16 120)">${T.n2} →</text>`;
+  [[0,0],[0,1],[1,0],[1,1]].forEach(([x,y])=>{const d=T.data.find(r=>r[0]===x&&r[1]===y);if(!d)return;const ok=predict([x,y])===d[2];
+    g+=`<circle cx="${P(x)}" cy="${Q(y)}" r="15" fill="${d[2]?tok('--lab'):tok('--card')}" stroke="${ok?tok('--lab'):tok('--bad')}" stroke-width="${ok?2.5:5}"/>`;
+    g+=`<text x="${P(x)}" y="${Q(y)+5}" text-anchor="middle" font-size="13" font-weight="700" fill="${d[2]?tok('--card'):tok('--lab')}">${d[2]}</text>`;});
+  $("plot").innerHTML=g;}
+function drawErrs(){const e=S.errs.slice(-30),max=TASKS[task].data.length;let g="";
+  if(!e.length)g=`<text x="0" y="50" font-size="14" fill="${tok('--soft')}">Aún no hay ${TASKS[task].unit}s completas.</text>`;
+  e.forEach((v,i)=>{const h=v/max*62;g+=`<rect x="${i*20}" y="${72-h}" width="14" height="${Math.max(h,2)}" rx="2" fill="${v?tok('--bad'):tok('--ok')}"/><text x="${i*20+7}" y="90" text-anchor="middle" font-size="10" fill="${tok('--soft')}">${S.errs.length-e.length+i+1}</text>`;});
+  $("errs").innerHTML=g;}
+const G=Guide($("guide"),{
+  intro:"Hola, soy <strong>Chispa</strong>. Hoy no me vas a decir la marca: voy a <strong>aprenderla yo</strong>. Muéstrame días y mira cómo cambian las barras de confianza.",
+  missions:[
+   {text:"Pulsa <strong>«Mostrar el siguiente día»</strong> para enseñarme el lunes.",hint:"Es el botón azul debajo de las barras.",
+    done:s=>s.task==="u"&&s.steps>=1,ok:"El lunes estaba nublado, así que mi cuenta dio 0,5: alcancé el umbral y dije «paraguas». Pero no llovió. Me equivoqué, así que <strong>bajé mi confianza en las nubes</strong> y me volví más exigente. ¿Ves cómo cambiaron las barras?"},
+   {text:"Sigue mostrándome días hasta que vuelva a equivocarme y mira <strong>qué barra cambia</strong>.",hint:"Pulsa «Mostrar el siguiente día» varias veces. El martes es interesante.",
+    done:s=>s.task==="u"&&s.steps>=2,ok:"El martes el pronóstico anunció lluvia, no le hice caso y me mojé 🌧️. Ahora <strong>confío más en el pronóstico</strong>. Fíjate: cada error mueve los pesos solo un poquito."},
+   {text:"Enséñame semanas completas hasta que pase una <strong>semana entera sin errores</strong>.",hint:"Usa «Una semana completa». Mira la barra verde en «Errores en cada semana».",
+    done:s=>s.task==="u"&&s.doneAt!==null,ok:"¡Aprendí! Ahora mi confianza en el pronóstico es mucho mayor que en las nubes. Nadie me lo dijo: lo descubrí equivocándome. En el mapa, mi línea separa bien las cuatro esquinas."},
+   {text:"Cambia a la pestaña <strong>💡 Interruptor de escalera</strong> y entréname <strong>20 semanas de golpe</strong>.",hint:"La luz se enciende si está arriba exactamente uno de los dos interruptores. Es el XOR del Laboratorio 1.1.",
+    done:s=>s.task==="x"&&s.epochs>=10,ok:"Por más que practico, no aprendo 😵. En el mapa, las esquinas con 1 están en diagonal: ninguna línea recta las separa de las de 0. Minsky y Papert lo demostraron en 1969, y casi nadie quiso estudiar redes neuronales por más de una década."}],
+  finale:"Viste a una neurona <strong>aprender de sus errores</strong> y también chocar con su límite. Para superarlo hacen falta varias neuronas en capas, que se entrenan con la misma idea: equivocarse y corregir."});
+function setTask(t){task=t;$("tab-u").setAttribute("aria-selected",t==="u");$("tab-x").setAttribute("aria-selected",t==="x");
+  $("step").textContent=t==="u"?"Mostrar el siguiente día":"Mostrar el siguiente caso";$("epoch").textContent=t==="u"?"Una semana completa":"Una ronda completa";$("many").textContent=t==="u"?"20 semanas de golpe":"20 rondas de golpe";reset();}
+$("tab-u").onclick=()=>setTask("u");$("tab-x").onclick=()=>setTask("x");
+$("step").onclick=()=>{step();render();};$("epoch").onclick=()=>{runEpoch();render();};
+$("many").onclick=()=>{for(let k=0;k<20;k++)runEpoch();render();};$("reset").onclick=reset;
+onTheme(render);reset();
+</script>
+</body></html>

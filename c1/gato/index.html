@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>¿Es un gato?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#7C3AED}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#A78BFA}}
+:root[data-theme="dark"]{--lab:#A78BFA}
+.versus{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+@media (max-width:600px){.versus{grid-template-columns:1fr}.versus .vs{justify-self:center}}
+.versus>div{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;box-shadow:4px 4px 0 var(--ink)}
+.versus .vs{background:none;border:0;box-shadow:none;font:800 28px var(--f-display);color:var(--lab);align-self:center;padding:0}
+.versus b{font-family:var(--f-display);font-size:20px}
+.versus .pic{font-size:36px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs .btn[aria-selected="true"]{background:var(--lab);color:var(--card);border-color:var(--lab)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.rules label{display:flex;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--paper);cursor:pointer;font-size:16px}
+.rules input{width:20px;height:20px;accent-color:var(--lab);flex:none}
+.rules label:has(input:checked){border-color:var(--lab)}
+.code{font-family:var(--f-mono);font-size:15px;background:var(--ink);color:var(--paper);border-radius:12px;padding:14px;white-space:pre-wrap;line-height:1.5}
+.code em{color:var(--spark);font-style:normal}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+@media (max-width:480px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .pill{white-space:normal}
+.card{border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:6px}
+.card .pic{font-size:42px;line-height:1}
+.card .nm{font-weight:700;line-height:1.25;font-size:16px}
+.card .ft{font-size:12px;color:var(--soft);font-family:var(--f-mono);line-height:1.4}
+.card.miss{border-color:var(--bad);background:var(--bad-soft)}
+.card.hit{border-color:var(--ok)}
+.card .truth{font-size:13px;color:var(--soft)}
+.score{font:800 40px var(--f-display);line-height:1}
+.w{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr) 3.4em;gap:10px;align-items:center;font-size:15px}
+.bar{height:14px;border-radius:7px;background:var(--line);position:relative;overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0;background:var(--lab);transition:all .3s} .bar i.neg{background:var(--bad)}
+.bar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--ink);opacity:.35}
+.samples{display:flex;gap:8px;flex-wrap:wrap}
+.samples span{background:var(--paper);border-radius:10px;padding:6px 8px;font-size:13px;font-family:var(--f-mono)}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 2.2</span>
+      <h1>¿Es un gato? Reglas contra ejemplos</h1>
+      <p class="lede">Hay dos maneras de enseñarle a una máquina a reconocer un gato: escribirle las reglas o mostrarle ejemplos. Vas a probar las dos y ver por qué la segunda ganó.</p>
+      <div class="meta"><span>⏱ 7 minutos</span><span>Doce fotos de prueba, un duelo</span></div>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="versus">
+      <div><span class="pic" aria-hidden="true">📜</span><b>IA simbólica: reglas</b><p style="font-size:16px">Una persona escribe la receta: «SI tiene bigotes Y orejas puntiagudas Y maúlla, ENTONCES es un gato». Es clara, pero el mundo está lleno de excepciones.</p></div>
+      <div class="vs">vs</div>
+      <div><span class="pic" aria-hidden="true">🖼️</span><b>IA conexionista: ejemplos</b><p style="font-size:16px">Le mostramos muchas fotos marcadas «gato» o «no gato», y ella misma descubre qué pistas importan, como un niño que aprende mirando.</p></div>
+    </div>
+    <div class="prose">
+      <p>Para que el duelo sea justo, cada foto viene descrita con las mismas ocho <button class="term" data-def="Algo que se puede observar en la foto: si se ven bigotes, si el hocico es corto, si la cola es larga... Una red real no recibe rasgos ya descritos: los descubre ella misma a partir de los píxeles.">pistas</button>: patas, bigotes, orejas, maullido, hocico, pupila, tamaño y cola. Pero ojo: en una foto no siempre se ve todo. Un gato dormido no maúlla y no muestra sus pupilas.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, el duelo</span>
+    <div id="guide"></div>
+    <div class="tabs" role="tablist">
+      <button class="btn" role="tab" id="t1" aria-selected="true">📜 Ronda 1: tus reglas</button>
+      <button class="btn" role="tab" id="t2" aria-selected="false">🧠 Ronda 2: que aprenda sola</button>
+    </div>
+    <div class="bench" id="p1">
+      <p>Marca las pistas que un gato <strong>debe</strong> tener. Tu programa dirá «gato» solo si se cumplen <strong>todas</strong> las marcadas. Empezamos con la regla del libro.</p>
+      <div class="rules" id="rules"></div>
+      <div class="code" id="code" aria-label="Tu programa"></div>
+      <div class="row"><span class="score mono" id="s1"></span><span id="s1n" style="flex:1;min-width:12em"></span></div>
+    </div>
+    <div class="bench" id="p2" hidden>
+      <p>Ahora no escribes nada. Le damos a una neurona <strong id="ntrain"></strong> fotos de práctica con su etiqueta. Cada vez que se equivoca, ajusta sus <button class="term" data-def="Números que dicen cuánta importancia le da a cada pista. Se ajustan solos durante el entrenamiento.">pesos</button>, igual que el perceptrón del paraguas. Las doce fotos de prueba de abajo <strong>nunca las vio</strong>.</p>
+      <div style="display:flex;flex-direction:column;gap:6px"><strong style="font-size:16px">Así son algunas fotos de práctica:</strong><div class="samples" id="samples"></div></div>
+      <div class="row"><button class="btn primary" id="train">Entrenar 50 vueltas</button><button class="btn" id="reset">Olvidar todo</button><span class="muted mono" id="ep"></span></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <strong>Lo que aprendió a mirar</strong>
+        <div id="weights" style="display:flex;flex-direction:column;gap:6px"></div>
+        <p class="muted" style="font-size:15px">Barra hacia la derecha: esa pista la convence de que es gato. Hacia la izquierda: la convence de que no. Nadie le dijo cuáles importaban.</p>
+      </div>
+      <div class="row"><span class="score mono" id="s2"></span><span id="s2n" style="flex:1;min-width:12em"></span></div>
+    </div>
+    <div class="bench">
+      <h3>Las doce fotos de prueba</h3>
+      <div class="cards" id="cards"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Las reglas se rompen</b><span>Cada arreglo para un caso rompe otro. Escribir todas las excepciones del mundo es casi imposible.</span></div>
+      <div><b>Sumar pistas es más flexible</b><span>La neurona no exige todo: si falta el maullido, otras pistas lo compensan.</span></div>
+      <div><b>Pero depende de los ejemplos</b><span>Aprende lo que le muestras. Con ejemplos pocos o sesgados, aprende mal. Y sus razones son difíciles de leer.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>Para calcular el impuesto de un sueldo, ¿usarías reglas o ejemplos? ¿Y para reconocer billetes falsos en fotos? Esta es una de las preguntas de repaso del capítulo.</p></div>
+    <p class="muted" style="font-size:15px">Esta es una versión mínima con una sola neurona. Una red real recibe los píxeles de la foto y descubre por sí misma, capa tras capa, bordes, formas y rasgos.</p>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../habitacion-china/">← 2.1</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../palabras/">2.3 →</a></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 2.2.</span><span>Las pistas de cada foto son una simplificación para el ejemplo.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+const F=[["patas","se ven sus 4 patas"],["bigotes","tiene bigotes"],["orejas","orejas puntiagudas"],["maulla","se le oye maullar"],["hocico","hocico corto"],["pupila","pupila alargada"],["chico","tamaño pequeño"],["cola","cola larga"]];
+const CARDS=[
+ ["🐈","Gato atigrado maullando",[1,1,1,1,1,1,1,1],1],["😴","Gato dormido en el sofá",[1,1,1,0,1,0,1,1],1],
+ ["🐾","Gato de tres patas",[0,1,1,1,1,1,1,1],1],["📷","Foto de un gato, sin sonido",[1,1,1,0,1,1,1,1],1],
+ ["🐱","Gato esfinge, sin pelo ni bigotes",[1,0,1,1,1,1,1,1],1],["🙀","Gato de orejas dobladas",[1,1,0,1,1,1,1,1],1],
+ ["📦","Gatito asomado en una caja",[0,1,1,1,1,1,1,0],1],["🐕","Chihuahua",[1,1,1,0,0,0,1,1],0],
+ ["🦊","Zorro andino",[1,1,1,0,0,1,1,1],0],["🐇","Conejo",[1,1,1,0,1,0,1,0],0],
+ ["🐅","Tigre",[1,1,0,0,1,0,0,1],0],["🧑","Primo imitando un maullido",[0,0,0,1,1,0,0,0],0]];
+const BOOK=["patas","bigotes","orejas","maulla"];
+let rule=new Set(BOOK),tab=1,changes=0,best=0;
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const PROTO=[[[1,1,1,1,1,1,1,1],1,30,"🐈"],[[1,1,0,0,1,0,0,1],0,6,"🐅"],[[1,1,1,0,0,0,1,1],0,8,"🐕"],[[1,1,1,0,0,1,1,1],0,6,"🦊"],[[1,1,1,0,1,0,1,0],0,8,"🐇"],[[1,1,1,0,0,0,0,1],0,6,"🐶"],[[0,0,0,0,1,0,0,0],0,4,"🧑"]];
+const DROP=[.2,.1,.1,.5,0,.3,0,.1];
+const TRAIN=[];PROTO.forEach(([v,y,n,e])=>{for(let k=0;k<n;k++){const x=v.map((b,j)=>y===1?(rnd()<DROP[j]?0:1):(rnd()<.05?1-b:b));TRAIN.push([x,y,e]);}});
+let W,B,epochs;
+function resetNet(){W=F.map(()=>0);B=0;epochs=0;}
+const sig=z=>1/(1+Math.exp(-z)),prob=x=>sig(x.reduce((s,v,j)=>s+v*W[j],B));
+function train(n){for(let e=0;e<n;e++){for(const [x,y] of TRAIN){const p=prob(x),g=y-p;for(let j=0;j<W.length;j++)W[j]+=0.15*g*x[j];B+=0.15*g;}epochs++;}}
+const ruleSays=x=>F.every(([k],j)=>!rule.has(k)||x[j]===1)?1:0;
+function renderRules(){
+  $("rules").innerHTML=F.map(([k,t])=>`<label><input type="checkbox" id="r-${k}" data-k="${k}" ${rule.has(k)?"checked":""}> ${t}</label>`).join("");
+  const c=F.filter(([k])=>rule.has(k)).map(([,t])=>t.toUpperCase());
+  $("code").innerHTML=c.length?`<em>SI</em> ${c.join(`\n   <em>Y</em> `)}\n<em>ENTONCES</em> es un gato\n<em>SI NO</em>, no es un gato`:"Sin condiciones: ¡todo es gato!";}
+function render(){
+  const trained=epochs>0,pred=CARDS.map(c=>tab===1?ruleSays(c[2]):(prob(c[2])>=.5?1:0)),hits=pred.filter((p,i)=>p===CARDS[i][3]).length;
+  if(tab===1)best=Math.max(best,hits);
+  $("cards").innerHTML=CARDS.map((c,i)=>{const ok=pred[i]===c[3],show=tab===1||trained;
+    return `<div class="card ${show?(ok?"hit":"miss"):""}"><span class="pic" aria-hidden="true">${c[0]}</span><span class="nm">${c[1]}</span>
+     <span class="truth">En realidad: <strong>${c[3]?"es gato":"no es gato"}</strong></span>
+     <span class="ft">${F.filter((f,j)=>c[2][j]).map(f=>f[0]).join(" · ")||"sin pistas"}</span>
+     ${show?`<span class="pill ${ok?"ok":"bad"}">${ok?"✓":"✗"} dice ${pred[i]?"gato":"no gato"}${tab===2?` · ${Math.round(prob(c[2])*100)} %`:""}</span>`:'<span class="pill">sin entrenar</span>'}</div>`;}).join("");
+  if(tab===1){$("s1").textContent=`${hits}/12`;const fn=CARDS.filter((c,i)=>c[3]&&!pred[i]).length,fp=CARDS.filter((c,i)=>!c[3]&&pred[i]).length;
+    $("s1n").innerHTML=`Tu programa rechaza <strong>${fn} gato(s)</strong> y confunde <strong>${fp} animal(es)</strong> con gatos.${changes?` Tu mejor marca: ${best}/12.`:""}`;}
+  else{$("ep").textContent=trained?`${epochs} vueltas`:"";$("s2").textContent=trained?`${hits}/12`:"–";
+    $("s2n").textContent=trained?(hits===12?"Acertó las doce fotos, y nunca las había visto.":`Falla ${12-hits}. Sigue entrenando.`):"Pulsa «Entrenar» para empezar.";
+    $("weights").innerHTML=F.map(([k,t],j)=>{const v=W[j],p=Math.min(50,Math.abs(v)/8*50);return `<div class="w"><span>${t}</span><div class="bar"><i class="${v<0?"neg":""}" style="left:${v<0?50-p:50}%;width:${p}%"></i></div><span class="mono">${v.toFixed(1).replace(".",",")}</span></div>`;}).join("");}
+  G.update({tab,changes,epochs,hits});}
+$("rules").addEventListener("change",e=>{const k=e.target.dataset.k;if(!k)return;e.target.checked?rule.add(k):rule.delete(k);changes++;renderRules();render();});
+function setTab(t){tab=t;$("t1").setAttribute("aria-selected",t===1);$("t2").setAttribute("aria-selected",t===2);$("p1").hidden=t!==1;$("p2").hidden=t!==2;render();}
+$("t1").onclick=()=>setTab(1);$("t2").onclick=()=>setTab(2);
+$("train").onclick=()=>{train(50);render();};$("reset").onclick=()=>{resetNet();render();};
+$("ntrain").textContent=TRAIN.length;
+$("samples").innerHTML=[0,1,2,30,38,46,52,60].map(k=>TRAIN[k]).map(([x,y,e])=>`<span>${e} ${y?"gato":"no gato"}${y&&!x[3]?" (no maúlla)":""}${y&&!x[5]?" (ojos cerrados)":""}</span>`).join("");
+const G=Guide($("guide"),{
+  intro:"Hola, soy <strong>Chispa</strong>. Hoy soy árbitro de un duelo: <strong>tus reglas</strong> contra <strong>una neurona que aprende</strong>. Las tarjetas rojas de abajo son fotos donde el programa se equivoca.",
+  missions:[
+   {text:"La regla del libro falla mucho. Mira las tarjetas rojas y <strong>quita la condición</strong> que crees que causa más errores.",hint:"¿Cuántas fotos de gato no tienen sonido? Un gato dormido o una foto no maúllan.",
+    done:s=>s.tab===1&&s.changes>=1,ok:"¿Mejoró? Seguramente sí en algunas fotos... y quizá ahora un animal que no es gato se coló. Así es el trabajo con reglas."},
+   {text:"Intenta llegar a <strong>12 de 12</strong> marcando y desmarcando pistas. Prueba varias combinaciones.",hint:"Pista: el conejo y el gato dormido se parecen mucho. ¿Qué pista los diferencia? ¿Y qué gato no tiene esa pista?",
+    done:s=>s.tab===1&&s.changes>=6,ok:s=>`Tu mejor marca fue <strong>${best}/12</strong>. Con reglas que exigen todo, siempre queda alguna excepción. ¡Bienvenido a los problemas de la IA simbólica!`},
+   {text:"Ahora la ronda 2. Toca <strong>«🧠 Ronda 2»</strong> y pulsa <strong>«Entrenar 50 vueltas»</strong>.",hint:"La pestaña está justo arriba del recuadro de reglas.",
+    done:s=>s.tab===2&&s.epochs>=50,ok:"¡Mira las barras! La neurona descubrió sola que el <strong>hocico corto</strong>, el <strong>tamaño</strong> y la <strong>cola</strong> son buenas pistas. Y quizá le dio peso negativo a los bigotes: perros, zorros y conejos también tienen."},
+   {text:"Entrénala hasta que acierte las <strong>12 fotos</strong> de prueba.",hint:"Pulsa «Entrenar» una o dos veces más.",
+    done:s=>s.tab===2&&s.hits===12,ok:"¡12 de 12! Reconoce al gato dormido, al de tres patas y al de orejas dobladas sin que nadie le escribiera una excepción. Por eso las redes neuronales ganaron el duelo a partir de 2012."}],
+  finale:"Probaste los dos grandes caminos de la IA. Las reglas son claras pero frágiles; los ejemplos son flexibles pero dependen de qué tan buenos sean los datos."});
+resetNet();renderRules();render();
+</script>
+</body></html>

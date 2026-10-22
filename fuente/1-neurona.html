@@ -1,0 +1,154 @@
+<title>Neurona de McCulloch y Pitts</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#D97706}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#FBBF24}}
+:root[data-theme="dark"]{--lab:#FBBF24}
+.switches{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--paper);cursor:pointer;color:var(--ink);font:700 17px var(--f-body);transition:all .15s}
+.sw .ico{font-size:40px;line-height:1;filter:grayscale(1);opacity:.55;transition:all .15s}
+.sw .st{font:700 13px var(--f-mono);color:var(--soft)}
+.sw[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft)}
+.sw[aria-pressed="true"] .ico{filter:none;opacity:1}
+.sw[aria-pressed="true"] .st{color:var(--blue)}
+.thr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;background:var(--paper);border-radius:14px;padding:10px}
+.thr .val{font:800 34px var(--f-display);min-width:1.4em;text-align:center;color:var(--lab)}
+.thr .btn{width:52px;font-size:24px;padding:0}
+#diag{width:100%;max-width:520px;margin:0 auto;display:block}
+#diag text{font-family:var(--f-mono)}
+.flow{stroke-dasharray:6 8;animation:flow .6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.verdict{display:flex;align-items:center;gap:12px;font-size:19px;background:var(--paper);border-radius:14px;padding:12px 14px}
+.verdict .big{font-size:40px;line-height:1}
+td.ok{color:var(--ok);font-weight:700} td.no{color:var(--bad);font-weight:700}
+tr.cur td{background:var(--spark-soft)}
+td.fire{color:var(--spark-ink);font-weight:700}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 1.1</span>
+      <h1>La neurona que decide si cruzas la calle</h1>
+      <p class="lede">En 1943 dos científicos imitaron una neurona del cerebro con una regla tan sencilla que cabe en una servilleta. Aquí vas a construirla con tus manos.</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>Sin matemáticas difíciles: solo sumar</span></div>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">🧠</span><p>Tu cerebro tiene miles de millones de <button class="term" data-def="Célula del sistema nervioso que recibe señales de otras neuronas y, si recibe suficientes, envía su propia señal.">neuronas</button>. Cada una recibe pequeñas señales eléctricas de otras.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">⚡</span><p>Si le llegan <strong>suficientes</strong> señales, la neurona «se dispara» y pasa el mensaje. Si no, se queda callada.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🧮</span><p>McCulloch y Pitts lo copiaron con números: <strong>sumar</strong> las señales, <strong>comparar</strong> con una marca y <strong>decidir</strong> sí (1) o no (0).</p></div>
+    </div>
+    <div class="prose">
+      <p>Piensa en la neurona como un <strong>vaso</strong>. Cada señal que llega le echa un poco de agua. En el vaso hay una <strong>marca</strong> pintada: si el agua llega a la marca, la neurona se dispara. Esa marca se llama <button class="term" data-def="El valor que la suma de señales debe alcanzar para que la neurona se active. Marca alta = neurona exigente. Marca baja = neurona fácil de convencer.">umbral</button>.</p>
+      <p>Nuestro ejemplo: solo cruzas la calle si <strong>hay luz verde</strong> y además <strong>no viene ningún auto</strong>. Cada condición que se cumple es una señal (vale 1). La que no se cumple vale 0.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <div class="switches">
+        <button class="sw" id="in0" aria-pressed="false"><span class="ico" aria-hidden="true">🚦</span>Hay luz verde<span class="st">apagada · 0</span></button>
+        <button class="sw" id="in1" aria-pressed="false"><span class="ico" aria-hidden="true">🛣️</span>La calle está libre<span class="st">apagada · 0</span></button>
+      </div>
+      <svg viewBox="0 0 400 230" id="diag" role="img" aria-label="La neurona como un vaso que se llena con las señales"></svg>
+      <div class="thr" role="group" aria-label="Umbral">
+        <span style="font-weight:700">Marca del vaso (umbral)</span>
+        <button class="btn" id="tminus" aria-label="Bajar el umbral">−</button>
+        <span class="val mono" id="tval">2</span>
+        <button class="btn" id="tplus" aria-label="Subir el umbral">+</button>
+      </div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Todas las posibilidades</span>
+    <div class="bench">
+      <p>Con dos señales solo hay cuatro situaciones posibles. Esta tabla muestra qué decide la neurona en cada una con la marca que elegiste. La fila amarilla es la que tienes encendida ahora.</p>
+      <div class="tablewrap"><table id="tt"></table></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Sumar, comparar, decidir</b><span>Eso es todo lo que hace esta neurona. Con eso ya puede tomar decisiones lógicas.</span></div>
+      <div><b>La marca lo cambia todo</b><span>Con marca 2 exige las dos condiciones («Y»). Con marca 1 le basta una («O»). La misma neurona, otra personalidad.</span></div>
+      <div><b>No aprende sola</b><span>Tú elegiste la marca. Que una neurona encuentre su marca por sí misma es el siguiente paso: el perceptrón (Laboratorio 1.2).</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>¿Qué otras decisiones de tu día podrías escribir como una neurona con dos o tres señales y una marca? Por ejemplo: ¿llevo chamarra?</p></div>
+    <dl class="gloss">
+      <div><dt>Entrada</dt><dd>Una señal que recibe la neurona: 1 si se cumple, 0 si no.</dd></div>
+      <div><dt>Umbral</dt><dd>La marca que debe alcanzar la suma para que la neurona se active.</dd></div>
+      <div><dt>Salida</dt><dd>La respuesta de la neurona: 1 (se activa) o 0 (se queda callada).</dd></div>
+      <div><dt>Operación «Y» y «O»</dt><dd>Reglas de la lógica de Boole: «Y» exige todo; «O» se conforma con una.</dd></div>
+    </dl>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 1.1.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+const st={x:[0,0],t:2,tried:new Set([2]),xorMode:false};
+const sum=()=>st.x[0]+st.x[1];
+const fires=(x,t)=>(x[0]+x[1])>=t?1:0;
+function draw(){
+  const s=sum(),o=s>=st.t?1:0,c=tok;
+  const base=190,unit=40,gx=170,gw=60;
+  let g="";
+  [[60,0],[160,1]].forEach(([y,i])=>{const on=st.x[i];
+    g+=`<path d="M62 ${y} C110 ${y} 120 ${110} ${gx-6} 120" fill="none" stroke="${on?c('--blue'):c('--line')}" stroke-width="${on?5:3}" class="${on?'flow':''}"/>`;
+    g+=`<circle cx="40" cy="${y}" r="22" fill="${on?c('--blue'):c('--card')}" stroke="${on?c('--blue'):c('--soft')}" stroke-width="2.5"/>`;
+    g+=`<text x="40" y="${y+7}" text-anchor="middle" font-size="20" font-weight="700" fill="${on?c('--card'):c('--soft')}">${on}</text>`;});
+  // cuerpo de la neurona
+  g+=`<ellipse cx="${gx+gw/2}" cy="125" rx="78" ry="98" fill="${o?c('--spark-soft'):c('--paper')}" stroke="${o?c('--spark'):c('--soft')}" stroke-width="3"/>`;
+  // vaso
+  const top=base-3*unit-10;
+  g+=`<path d="M${gx} ${top} L${gx+4} ${base} L${gx+gw-4} ${base} L${gx+gw} ${top}" fill="${c('--card')}" stroke="${c('--ink')}" stroke-width="3" stroke-linejoin="round"/>`;
+  if(s>0){const h=s*unit;g+=`<rect x="${gx+5}" y="${base-h}" width="${gw-10}" height="${h-2}" fill="${c('--blue')}" opacity=".75" rx="2"><animate attributeName="height" from="0" to="${h-2}" dur=".3s"/><animate attributeName="y" from="${base}" to="${base-h}" dur=".3s"/></rect>`;}
+  for(let k=1;k<=3;k++)g+=`<line x1="${gx+gw-12}" x2="${gx+gw-2}" y1="${base-k*unit}" y2="${base-k*unit}" stroke="${c('--soft')}" stroke-width="2"/><text x="${gx+gw+6}" y="${base-k*unit+5}" font-size="12" fill="${c('--soft')}">${k}</text>`;
+  const ty=base-st.t*unit;
+  g+=`<line x1="${gx-14}" x2="${gx+gw+2}" y1="${ty}" y2="${ty}" stroke="${c('--lab')}" stroke-width="4" stroke-dasharray="7 5"/>`;
+  g+=`<text x="${gx-18}" y="${ty+5}" text-anchor="end" font-size="13" font-weight="700" fill="${c('--lab')}">marca ${st.t}</text>`;
+  g+=`<text x="${gx+gw/2}" y="${base+22}" text-anchor="middle" font-size="13" fill="${c('--soft')}">suma = ${s}</text>`;
+  // salida
+  g+=`<line x1="${gx+gw/2+78}" y1="125" x2="345" y2="125" stroke="${o?c('--spark'):c('--line')}" stroke-width="${o?6:3}" class="${o?'flow':''}"/>`;
+  g+=`<circle cx="365" cy="125" r="26" fill="${o?c('--spark'):c('--card')}" stroke="${o?c('--spark'):c('--soft')}" stroke-width="3"/>`;
+  g+=`<text x="365" y="133" text-anchor="middle" font-size="22" font-weight="700" fill="${o?'#2A1A00':c('--soft')}">${o}</text>`;
+  g+=`<text x="365" y="172" text-anchor="middle" font-size="12" fill="${c('--soft')}">salida</text>`;
+  $("diag").innerHTML=g;
+  $("verdict").innerHTML=o?`<span class="big" aria-hidden="true">🚶</span><span><strong>¡Se dispara! Salida 1: cruza.</strong> El agua (${s}) llegó a la marca (${st.t}).</span>`
+    :`<span class="big" aria-hidden="true">✋</span><span><strong>Se queda callada. Salida 0: espera.</strong> El agua (${s}) no llega a la marca (${st.t}).</span>`;
+  [0,1].forEach(i=>{const b=$("in"+i);b.setAttribute("aria-pressed",st.x[i]?"true":"false");b.querySelector(".st").textContent=st.x[i]?"encendida · 1":"apagada · 0";});
+  $("tval").textContent=st.t;$("tminus").disabled=st.t<=0;$("tplus").disabled=st.t>=3;
+  let h=`<thead><tr><th>Luz verde</th><th>Calle libre</th><th>Suma</th><th>Neurona</th>${st.xorMode?"<th>Queremos (XOR)</th>":""}</tr></thead><tbody>`;
+  [[0,0],[0,1],[1,0],[1,1]].forEach(x=>{const f=fires(x,st.t),cur=x[0]===st.x[0]&&x[1]===st.x[1],w=x[0]^x[1];
+    h+=`<tr class="${cur?"cur":""}"><td class="mono">${x[0]}</td><td class="mono">${x[1]}</td><td class="mono">${x[0]+x[1]}</td><td class="mono ${f?"fire":""}">${f?"1 · cruza":"0 · espera"}</td>${st.xorMode?`<td class="mono ${f===w?"ok":"no"}">${w} ${f===w?"✓":"✗"}</td>`:""}</tr>`;});
+  $("tt").innerHTML=h+"</tbody>";
+  G.update(st);
+}
+const G=Guide($("guide"),{
+  intro:"¡Hola! Soy <strong>Chispa</strong>, una neurona. Te voy a dar cuatro misiones cortas. Abajo tienes dos interruptores, mi «vaso» y la marca. Toca lo que te pida y mira qué pasa.",
+  missions:[
+   {text:"Enciende solo <strong>«Hay luz verde»</strong> tocando su tarjeta.",hint:"Es la tarjeta del semáforo 🚦. La otra debe quedar apagada.",
+    done:s=>s.x[0]===1&&s.x[1]===0&&s.t===2,ok:"Me llegó <strong>una</strong> señal: el agua subió a 1. Pero la marca está en 2, así que no alcanza y me quedo callada. Tiene sentido: hay luz verde, pero quizá viene un auto."},
+   {text:"Ahora enciende también <strong>«La calle está libre»</strong>.",hint:"Las dos tarjetas deben quedar azules y la marca en 2.",
+    done:s=>s.x[0]&&s.x[1]&&s.t===2,ok:"1 + 1 = 2: ¡el agua llegó a la marca y me disparé! Solo me activo si se cumplen <strong>las dos</strong> condiciones. En lógica eso se llama operación <strong>«Y»</strong>."},
+   {text:"Baja la marca a <strong>1</strong> con el botón − y deja encendida <strong>solo una</strong> de las señales.",hint:"Pulsa − una vez para que la marca quede en 1. Luego apaga una de las dos tarjetas.",
+    done:s=>s.t===1&&s.x[0]+s.x[1]===1,ok:"Con la marca más baja me basta <strong>una</strong> señal para dispararme. Ahora soy una neurona fácil de convencer. Esto es la operación <strong>«O»</strong>. Mira la tabla de abajo: cambió entera solo por mover la marca."},
+   {text:"Reto difícil: el <strong>interruptor de escalera</strong> enciende la luz si está activada <strong>exactamente una</strong> señal, pero no las dos. Busca una marca que lo logre. Prueba las marcas 0, 1, 2 y 3 y mira la tabla.",
+    hint:"Activé una columna nueva en la tabla: «Queremos». Busca una marca que deje las cuatro filas con ✓.",
+    done:s=>s.tried.size>=4,ok:"¡No existe! Con marca 1 me disparo también cuando están las dos; con marca 2 no me disparo con una sola. Una neurona que solo suma no puede hacerlo. Esto se llama <strong>XOR</strong>, y resolverlo necesitó <strong>varias neuronas en capas</strong>. Lo verás en el Laboratorio 1.2."}],
+  finale:"¡Lo lograste! Ya sabes lo que hacía la primera neurona artificial de la historia: <strong>sumar, comparar con una marca y decidir</strong>. Puedes seguir jugando con los interruptores y la marca."});
+G.onMission=i=>{st.xorMode=i===3;if(i===3)st.tried=new Set([st.t]);draw();};
+[0,1].forEach(i=>$("in"+i).addEventListener("click",()=>{st.x[i]^=1;draw();}));
+$("tminus").onclick=()=>{st.t=Math.max(0,st.t-1);st.tried.add(st.t);draw();};
+$("tplus").onclick=()=>{st.t=Math.min(3,st.t+1);st.tried.add(st.t);draw();};
+onTheme(draw);draw();
+</script>

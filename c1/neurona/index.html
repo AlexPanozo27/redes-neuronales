@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>Neurona de McCulloch y Pitts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#D97706}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#FBBF24}}
+:root[data-theme="dark"]{--lab:#FBBF24}
+.switches{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sw{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--paper);cursor:pointer;color:var(--ink);font:700 17px var(--f-body);transition:all .15s}
+.sw .ico{font-size:40px;line-height:1;filter:grayscale(1);opacity:.55;transition:all .15s}
+.sw .st{font:700 13px var(--f-mono);color:var(--soft)}
+.sw[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft)}
+.sw[aria-pressed="true"] .ico{filter:none;opacity:1}
+.sw[aria-pressed="true"] .st{color:var(--blue)}
+.thr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;background:var(--paper);border-radius:14px;padding:10px}
+.thr .val{font:800 34px var(--f-display);min-width:1.4em;text-align:center;color:var(--lab)}
+.thr .btn{width:52px;font-size:24px;padding:0}
+#diag{width:100%;max-width:520px;margin:0 auto;display:block}
+#diag text{font-family:var(--f-mono)}
+.flow{stroke-dasharray:6 8;animation:flow .6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.verdict{display:flex;align-items:center;gap:12px;font-size:19px;background:var(--paper);border-radius:14px;padding:12px 14px}
+.verdict .big{font-size:40px;line-height:1}
+td.ok{color:var(--ok);font-weight:700} td.no{color:var(--bad);font-weight:700}
+tr.cur td{background:var(--spark-soft)}
+td.fire{color:var(--spark-ink);font-weight:700}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo I</span>
+      <span class="tag">Laboratorio 1.1</span>
+      <h1>La neurona que decide si cruzas la calle</h1>
+      <p class="lede">En 1943 dos científicos imitaron una neurona del cerebro con una regla tan sencilla que cabe en una servilleta. Aquí vas a construirla con tus manos.</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>Sin matemáticas difíciles: solo sumar</span></div>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">🧠</span><p>Tu cerebro tiene miles de millones de <button class="term" data-def="Célula del sistema nervioso que recibe señales de otras neuronas y, si recibe suficientes, envía su propia señal.">neuronas</button>. Cada una recibe pequeñas señales eléctricas de otras.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">⚡</span><p>Si le llegan <strong>suficientes</strong> señales, la neurona «se dispara» y pasa el mensaje. Si no, se queda callada.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🧮</span><p>McCulloch y Pitts lo copiaron con números: <strong>sumar</strong> las señales, <strong>comparar</strong> con una marca y <strong>decidir</strong> sí (1) o no (0).</p></div>
+    </div>
+    <div class="prose">
+      <p>Piensa en la neurona como un <strong>vaso</strong>. Cada señal que llega le echa un poco de agua. En el vaso hay una <strong>marca</strong> pintada: si el agua llega a la marca, la neurona se dispara. Esa marca se llama <button class="term" data-def="El valor que la suma de señales debe alcanzar para que la neurona se active. Marca alta = neurona exigente. Marca baja = neurona fácil de convencer.">umbral</button>.</p>
+      <p>Nuestro ejemplo: solo cruzas la calle si <strong>hay luz verde</strong> y además <strong>no viene ningún auto</strong>. Cada condición que se cumple es una señal (vale 1). La que no se cumple vale 0.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <div class="switches">
+        <button class="sw" id="in0" aria-pressed="false"><span class="ico" aria-hidden="true">🚦</span>Hay luz verde<span class="st">apagada · 0</span></button>
+        <button class="sw" id="in1" aria-pressed="false"><span class="ico" aria-hidden="true">🛣️</span>La calle está libre<span class="st">apagada · 0</span></button>
+      </div>
+      <svg viewBox="0 0 400 230" id="diag" role="img" aria-label="La neurona como un vaso que se llena con las señales"></svg>
+      <div class="thr" role="group" aria-label="Umbral">
+        <span style="font-weight:700">Marca del vaso (umbral)</span>
+        <button class="btn" id="tminus" aria-label="Bajar el umbral">−</button>
+        <span class="val mono" id="tval">2</span>
+        <button class="btn" id="tplus" aria-label="Subir el umbral">+</button>
+      </div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Todas las posibilidades</span>
+    <div class="bench">
+      <p>Con dos señales solo hay cuatro situaciones posibles. Esta tabla muestra qué decide la neurona en cada una con la marca que elegiste. La fila amarilla es la que tienes encendida ahora.</p>
+      <div class="tablewrap"><table id="tt"></table></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Sumar, comparar, decidir</b><span>Eso es todo lo que hace esta neurona. Con eso ya puede tomar decisiones lógicas.</span></div>
+      <div><b>La marca lo cambia todo</b><span>Con marca 2 exige las dos condiciones («Y»). Con marca 1 le basta una («O»). La misma neurona, otra personalidad.</span></div>
+      <div><b>No aprende sola</b><span>Tú elegiste la marca. Que una neurona encuentre su marca por sí misma es el siguiente paso: el perceptrón (Laboratorio 1.2).</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>¿Qué otras decisiones de tu día podrías escribir como una neurona con dos o tres señales y una marca? Por ejemplo: ¿llevo chamarra?</p></div>
+    <dl class="gloss">
+      <div><dt>Entrada</dt><dd>Una señal que recibe la neurona: 1 si se cumple, 0 si no.</dd></div>
+      <div><dt>Umbral</dt><dd>La marca que debe alcanzar la suma para que la neurona se active.</dd></div>
+      <div><dt>Salida</dt><dd>La respuesta de la neurona: 1 (se activa) o 0 (se queda callada).</dd></div>
+      <div><dt>Operación «Y» y «O»</dt><dd>Reglas de la lógica de Boole: «Y» exige todo; «O» se conforma con una.</dd></div>
+    </dl>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><span></span><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../perceptron/">1.2 →</a></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo I, sección 1.1.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+const st={x:[0,0],t:2,tried:new Set([2]),xorMode:false};
+const sum=()=>st.x[0]+st.x[1];
+const fires=(x,t)=>(x[0]+x[1])>=t?1:0;
+function draw(){
+  const s=sum(),o=s>=st.t?1:0,c=tok;
+  const base=190,unit=40,gx=170,gw=60;
+  let g="";
+  [[60,0],[160,1]].forEach(([y,i])=>{const on=st.x[i];
+    g+=`<path d="M62 ${y} C110 ${y} 120 ${110} ${gx-6} 120" fill="none" stroke="${on?c('--blue'):c('--line')}" stroke-width="${on?5:3}" class="${on?'flow':''}"/>`;
+    g+=`<circle cx="40" cy="${y}" r="22" fill="${on?c('--blue'):c('--card')}" stroke="${on?c('--blue'):c('--soft')}" stroke-width="2.5"/>`;
+    g+=`<text x="40" y="${y+7}" text-anchor="middle" font-size="20" font-weight="700" fill="${on?c('--card'):c('--soft')}">${on}</text>`;});
+  // cuerpo de la neurona
+  g+=`<ellipse cx="${gx+gw/2}" cy="125" rx="78" ry="98" fill="${o?c('--spark-soft'):c('--paper')}" stroke="${o?c('--spark'):c('--soft')}" stroke-width="3"/>`;
+  // vaso
+  const top=base-3*unit-10;
+  g+=`<path d="M${gx} ${top} L${gx+4} ${base} L${gx+gw-4} ${base} L${gx+gw} ${top}" fill="${c('--card')}" stroke="${c('--ink')}" stroke-width="3" stroke-linejoin="round"/>`;
+  if(s>0){const h=s*unit;g+=`<rect x="${gx+5}" y="${base-h}" width="${gw-10}" height="${h-2}" fill="${c('--blue')}" opacity=".75" rx="2"><animate attributeName="height" from="0" to="${h-2}" dur=".3s"/><animate attributeName="y" from="${base}" to="${base-h}" dur=".3s"/></rect>`;}
+  for(let k=1;k<=3;k++)g+=`<line x1="${gx+gw-12}" x2="${gx+gw-2}" y1="${base-k*unit}" y2="${base-k*unit}" stroke="${c('--soft')}" stroke-width="2"/><text x="${gx+gw+6}" y="${base-k*unit+5}" font-size="12" fill="${c('--soft')}">${k}</text>`;
+  const ty=base-st.t*unit;
+  g+=`<line x1="${gx-14}" x2="${gx+gw+2}" y1="${ty}" y2="${ty}" stroke="${c('--lab')}" stroke-width="4" stroke-dasharray="7 5"/>`;
+  g+=`<text x="${gx-18}" y="${ty+5}" text-anchor="end" font-size="13" font-weight="700" fill="${c('--lab')}">marca ${st.t}</text>`;
+  g+=`<text x="${gx+gw/2}" y="${base+22}" text-anchor="middle" font-size="13" fill="${c('--soft')}">suma = ${s}</text>`;
+  // salida
+  g+=`<line x1="${gx+gw/2+78}" y1="125" x2="345" y2="125" stroke="${o?c('--spark'):c('--line')}" stroke-width="${o?6:3}" class="${o?'flow':''}"/>`;
+  g+=`<circle cx="365" cy="125" r="26" fill="${o?c('--spark'):c('--card')}" stroke="${o?c('--spark'):c('--soft')}" stroke-width="3"/>`;
+  g+=`<text x="365" y="133" text-anchor="middle" font-size="22" font-weight="700" fill="${o?'#2A1A00':c('--soft')}">${o}</text>`;
+  g+=`<text x="365" y="172" text-anchor="middle" font-size="12" fill="${c('--soft')}">salida</text>`;
+  $("diag").innerHTML=g;
+  $("verdict").innerHTML=o?`<span class="big" aria-hidden="true">🚶</span><span><strong>¡Se dispara! Salida 1: cruza.</strong> El agua (${s}) llegó a la marca (${st.t}).</span>`
+    :`<span class="big" aria-hidden="true">✋</span><span><strong>Se queda callada. Salida 0: espera.</strong> El agua (${s}) no llega a la marca (${st.t}).</span>`;
+  [0,1].forEach(i=>{const b=$("in"+i);b.setAttribute("aria-pressed",st.x[i]?"true":"false");b.querySelector(".st").textContent=st.x[i]?"encendida · 1":"apagada · 0";});
+  $("tval").textContent=st.t;$("tminus").disabled=st.t<=0;$("tplus").disabled=st.t>=3;
+  let h=`<thead><tr><th>Luz verde</th><th>Calle libre</th><th>Suma</th><th>Neurona</th>${st.xorMode?"<th>Queremos (XOR)</th>":""}</tr></thead><tbody>`;
+  [[0,0],[0,1],[1,0],[1,1]].forEach(x=>{const f=fires(x,st.t),cur=x[0]===st.x[0]&&x[1]===st.x[1],w=x[0]^x[1];
+    h+=`<tr class="${cur?"cur":""}"><td class="mono">${x[0]}</td><td class="mono">${x[1]}</td><td class="mono">${x[0]+x[1]}</td><td class="mono ${f?"fire":""}">${f?"1 · cruza":"0 · espera"}</td>${st.xorMode?`<td class="mono ${f===w?"ok":"no"}">${w} ${f===w?"✓":"✗"}</td>`:""}</tr>`;});
+  $("tt").innerHTML=h+"</tbody>";
+  G.update(st);
+}
+const G=Guide($("guide"),{
+  intro:"¡Hola! Soy <strong>Chispa</strong>, una neurona. Te voy a dar cuatro misiones cortas. Abajo tienes dos interruptores, mi «vaso» y la marca. Toca lo que te pida y mira qué pasa.",
+  missions:[
+   {text:"Enciende solo <strong>«Hay luz verde»</strong> tocando su tarjeta.",hint:"Es la tarjeta del semáforo 🚦. La otra debe quedar apagada.",
+    done:s=>s.x[0]===1&&s.x[1]===0&&s.t===2,ok:"Me llegó <strong>una</strong> señal: el agua subió a 1. Pero la marca está en 2, así que no alcanza y me quedo callada. Tiene sentido: hay luz verde, pero quizá viene un auto."},
+   {text:"Ahora enciende también <strong>«La calle está libre»</strong>.",hint:"Las dos tarjetas deben quedar azules y la marca en 2.",
+    done:s=>s.x[0]&&s.x[1]&&s.t===2,ok:"1 + 1 = 2: ¡el agua llegó a la marca y me disparé! Solo me activo si se cumplen <strong>las dos</strong> condiciones. En lógica eso se llama operación <strong>«Y»</strong>."},
+   {text:"Baja la marca a <strong>1</strong> con el botón − y deja encendida <strong>solo una</strong> de las señales.",hint:"Pulsa − una vez para que la marca quede en 1. Luego apaga una de las dos tarjetas.",
+    done:s=>s.t===1&&s.x[0]+s.x[1]===1,ok:"Con la marca más baja me basta <strong>una</strong> señal para dispararme. Ahora soy una neurona fácil de convencer. Esto es la operación <strong>«O»</strong>. Mira la tabla de abajo: cambió entera solo por mover la marca."},
+   {text:"Reto difícil: el <strong>interruptor de escalera</strong> enciende la luz si está activada <strong>exactamente una</strong> señal, pero no las dos. Busca una marca que lo logre. Prueba las marcas 0, 1, 2 y 3 y mira la tabla.",
+    hint:"Activé una columna nueva en la tabla: «Queremos». Busca una marca que deje las cuatro filas con ✓.",
+    done:s=>s.tried.size>=4,ok:"¡No existe! Con marca 1 me disparo también cuando están las dos; con marca 2 no me disparo con una sola. Una neurona que solo suma no puede hacerlo. Esto se llama <strong>XOR</strong>, y resolverlo necesitó <strong>varias neuronas en capas</strong>. Lo verás en el Laboratorio 1.2."}],
+  finale:"¡Lo lograste! Ya sabes lo que hacía la primera neurona artificial de la historia: <strong>sumar, comparar con una marca y decidir</strong>. Puedes seguir jugando con los interruptores y la marca."});
+G.onMission=i=>{st.xorMode=i===3;if(i===3)st.tried=new Set([st.t]);draw();};
+[0,1].forEach(i=>$("in"+i).addEventListener("click",()=>{st.x[i]^=1;draw();}));
+$("tminus").onclick=()=>{st.t=Math.max(0,st.t-1);st.tried.add(st.t);draw();};
+$("tplus").onclick=()=>{st.t=Math.min(3,st.t+1);st.tried.add(st.t);draw();};
+onTheme(draw);draw();
+</script>
+</body></html>
