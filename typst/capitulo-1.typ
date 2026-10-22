@@ -54,7 +54,7 @@
   // QR de los laboratorios interactivos (alexpanozo27.github.io/redes-neuronales)
   #let cap1-qr(archivo, direccion, descripcion) = align(center)[
     #block(breakable: false, width: 100%, inset: 8pt, radius: 4pt, stroke: 0.5pt + rgb("#CBD5E0"), fill: rgb("#F4F7FC"))[
-      #image(archivo, format: "svg", width: 2.6cm)
+      #image(archivo, format: "svg", width: 4.2cm)
       #v(-0.2em)
       #text(size: 8pt, weight: "bold", fill: rgb("#1D4ED8"), tracking: 1pt)[ESCANEA Y EXPERIMENTA]
       #v(-0.4em)
@@ -80,16 +80,16 @@
     )
   ]
 
-  #let cap1-capas = align(center)[
+  #let cap1-capas = block(width: 100%, above: 1.6em, below: 1.6em, breakable: false)[#align(center)[
     #set text(size: 10pt)
-    #let capa(t, n) = block(width: 100% - n * 12%, inset: 6pt, radius: 3pt, above: 0pt, below: 3pt,
+    #let capa(t, n) = block(width: 100% - n * 12%, inset: 7pt, radius: 3pt, above: 0pt, below: 5pt,
       fill: rgb("#1D4ED8").transparentize(85% - n * 15%))[*#t*]
     #capa("Inteligencia Artificial", 0)
     #capa("Aprendizaje Automático", 1)
     #capa("Redes Neuronales", 2)
     #capa("Aprendizaje Profundo", 3)
     #capa("IA Generativa", 4)
-  ]
+  ]]
 
   #cap1-portada()
 
