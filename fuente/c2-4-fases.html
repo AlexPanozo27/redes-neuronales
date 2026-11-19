@@ -1,0 +1,85 @@
+<title>Arma el proyecto paso a paso</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#B45309}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#FBBF24}}
+:root[data-theme="dark"]{--lab:#FBBF24}
+.pool{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.pool{grid-template-columns:1fr}}
+.chip{display:flex;gap:10px;align-items:center;text-align:left;min-height:58px}
+.chip .e{font-size:26px}
+.chip.wrong{animation:shake .35s;border-color:var(--bad)}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media (prefers-reduced-motion: reduce){.chip.wrong{animation:none}}
+.line{display:flex;flex-direction:column;gap:0;position:relative}
+.step{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;padding-bottom:14px;position:relative}
+.step::before{content:"";position:absolute;left:21px;top:40px;bottom:0;width:3px;background:var(--line)}
+.step:last-child::before{display:none}
+.step .dot{width:44px;height:44px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center;font:800 18px var(--f-display);z-index:1}
+.step h3{margin:6px 0 2px;font-family:var(--f-display);font-size:19px}
+.step p{margin:0;font-size:16px}
+.step .ex{background:var(--paper);border-radius:10px;padding:8px 10px;margin-top:6px;font-size:15px}
+.step .ref{font:700 12px var(--f-mono);color:var(--soft)}
+.loop{background:var(--spark-soft);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center}
+.loop .e{font-size:34px}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo II</span>
+      <span class="tag">Laboratorio 10.4</span>
+      <h1>Arma el proyecto paso a paso</h1>
+      <p class="lede">Una cooperativa del altiplano quiere una app que, con una foto de la hoja, diga si su papa tiene <strong>tizón</strong>. ¿Por dónde empezarías? Pon las fases del proyecto en orden.</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>8 fases, un caso real</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Ordena las fases</span>
+    <div class="bench">
+      <p id="ask" aria-live="polite"><strong>¿Cuál es la fase 1?</strong> Toca la tarjeta que va primero.</p>
+      <div class="pool" id="pool"></div>
+      <div class="line" id="line"></div>
+      <div class="loop" id="loop" hidden><span class="e" aria-hidden="true">🔁</span><p><strong>No es una línea, es un ciclo.</strong> Cuando el monitoreo detecta que el modelo empeora (por ejemplo, aparece una variedad nueva de papa), se vuelve a recolectar datos y a entrenar. Un proyecto de IA nunca está «terminado» del todo.</p></div>
+      <div class="row"><button class="btn" id="reset">Empezar de nuevo</button><span class="muted" id="err"></span></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Primero el problema</b><span>Antes de tocar una red hay que saber qué se quiere resolver y cómo se medirá el éxito.</span></div>
+      <div><b>El dato pesa más que la red</b><span>Recolectar y preparar los datos suele llevar más tiempo que entrenar.</span></div>
+      <div><b>Entregar no es terminar</b><span>Un modelo en uso se vigila y se vuelve a entrenar cuando el mundo cambia.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>¿En qué fase crees que fracasan más proyectos de IA? Muchos fracasan en la primera: resuelven con mucho esfuerzo un problema que nadie tenía.</p></div>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo II, sección 10.4.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+const S=[
+ ["🎯","Definir el problema","Qué se quiere predecir, para quién y cómo se sabrá si funciona.","Meta: que la app acierte al menos 9 de cada 10 hojas y responda sin internet, porque en la parcela no hay señal.","Sección 10.4"],
+ ["📷","Recolectar los datos","Reunir ejemplos reales del problema.","Agrónomos y productores toman 5 000 fotos de hojas sanas y enfermas, con distinta luz y en varias comunidades.","Sección 11.1"],
+ ["🧹","Preparar los datos","Limpiar, etiquetar y dividir los ejemplos.","Se borran fotos borrosas o repetidas, un agrónomo marca cada una como «sana» o «tizón» y se separan en entrenamiento, validación y prueba.","Secciones 11.2 a 11.5"],
+ ["🏗️","Diseñar la red","Elegir cuántas capas y nodos tendrá y cómo se conectan.","Como son imágenes, se elige una red convolucional pequeña que quepa en un celular sencillo.","Sección 12"],
+ ["🏋️","Entrenar","La red ve los ejemplos una y otra vez y ajusta sus pesos para equivocarse menos.","Se entrena durante 30 épocas en una computadora con GPU, vigilando que no memorice las fotos.","Sección 13"],
+ ["🧪","Evaluar","Probar con datos que la red nunca vio.","Con las fotos de prueba acierta 92 de cada 100. Pero falla más con fotos tomadas al atardecer: hay que conseguir más de esas.","Sección 14"],
+ ["🚀","Desplegar","Poner el modelo a trabajar dentro de una aplicación real.","El modelo se exporta en un formato liviano y se integra en la app de la cooperativa.","Sección 15"],
+ ["📈","Monitorear","Vigilar cómo se comporta con los usuarios y volver a entrenar cuando haga falta.","Al año aparece una variedad nueva de papa y los aciertos bajan. Se juntan fotos nuevas y se reentrena.","Sección 16"]];
+let order,next,errs;
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function start(){order=shuffle(S.map((_,k)=>k));next=0;errs=0;$("line").innerHTML="";$("loop").hidden=true;$("err").textContent="";render();}
+function render(){
+ $("pool").innerHTML=order.filter(k=>k>=next).map(k=>`<button class="btn chip" data-k="${k}"><span class="e" aria-hidden="true">${S[k][0]}</span><span>${S[k][1]}</span></button>`).join("");
+ $("pool").querySelectorAll("button").forEach(b=>b.onclick=()=>pick(+b.dataset.k,b));
+ $("ask").innerHTML=next<S.length?`<strong>¿Cuál es la fase ${next+1}?</strong> ${next===0?"Toca la tarjeta que va primero.":"Toca la que sigue."}`:`<strong>¡Proyecto armado!</strong> ${errs===0?"Sin un solo error.":`Con ${errs} ${errs===1?"intento fallido":"intentos fallidos"}.`} Lee abajo qué pasa en cada fase con el caso de la papa.`;}
+function pick(k,b){
+ if(k!==next){errs++;b.classList.remove("wrong");void b.offsetWidth;b.classList.add("wrong");
+  $("err").textContent=k<next?"":`Todavía no. «${S[k][1]}» va más adelante. Pista: ${["piensa qué necesitas saber antes de hacer cualquier cosa","sin ejemplos no hay nada que preparar","los datos crudos casi nunca sirven tal como llegan","primero decides la forma de la red y después la entrenas","una red sin entrenar no sabe nada","antes de entregarla, hay que comprobar que funciona","no puedes vigilar algo que todavía no está en uso",""][next]}.`;return;}
+ $("err").textContent="";const s=S[k];
+ $("line").insertAdjacentHTML("beforeend",`<div class="step"><span class="dot">${k+1}</span><div><h3>${s[0]} ${s[1]}</h3><p>${s[2]}</p><div class="ex"><strong>En el caso de la papa:</strong> ${s[3]}</div><span class="ref">En el libro: ${s[4]}</span></div></div>`);
+ next++;if(next===S.length)$("loop").hidden=false;render();}
+$("reset").onclick=start;start();
+</script>
