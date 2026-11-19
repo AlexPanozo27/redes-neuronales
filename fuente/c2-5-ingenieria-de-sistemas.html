@@ -1,0 +1,131 @@
+<title>Vigila el servidor con una red neuronal</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#0369A1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#38BDF8}}
+:root[data-theme="dark"]{--lab:#38BDF8}
+#chart{width:100%;display:block}
+.ev{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.ev{grid-template-columns:1fr}}
+.ev .btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-height:64px}
+.ev .btn small{font-weight:400;color:var(--soft);font-size:14px}
+.ev .btn[aria-pressed="true"]{border-color:var(--lab);background:var(--blue-soft)}
+.sens{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--paper);border-radius:14px;padding:10px 14px}
+.sens input{flex:1;min-width:160px;accent-color:var(--lab);min-height:32px}
+.sens .v{font:800 24px var(--f-display);color:var(--lab);min-width:2.6em}
+.alerts{display:flex;flex-direction:column;gap:6px}
+.alert{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;background:var(--paper);border-radius:12px;padding:10px 12px;font-size:16px}
+.alert.real{border-left:5px solid var(--bad)} .alert.fake{border-left:5px solid var(--spark)} .alert.miss{border-left:5px solid var(--soft)}
+.score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.score div{background:var(--paper);border-radius:12px;padding:10px;text-align:center}
+.score b{display:block;font:800 26px var(--f-display)}
+.score span{font-size:13px;color:var(--soft)}
+.uses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.uses{grid-template-columns:1fr}}
+.uses div{background:var(--paper);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;font-size:16px}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo II</span>
+      <span class="tag">Laboratorio 17.2</span>
+      <h1>Vigila el servidor con una red neuronal</h1>
+      <p class="lede">Eres parte del equipo de sistemas de una universidad. Una red neuronal aprendió cómo es un día normal en el sistema de inscripciones. Tu trabajo: decidir qué tan sensible debe ser la alarma.</p>
+      <div class="meta"><span>⏱ 7 minutos</span><span>Un caso típico de Ingeniería de Sistemas</span></div>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">📚</span><p>La red vio <strong>semanas de registros</strong> del servidor y aprendió cuántas peticiones por minuto son normales a cada hora.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">📏</span><p>Cada minuto compara lo que <strong>espera</strong> con lo que <strong>realmente pasa</strong>. La diferencia es el error de predicción.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🚨</span><p>Si la diferencia es demasiado grande, avisa: puede ser una <button class="term" data-def="Comportamiento que se aparta mucho de lo normal. Puede ser un ataque, una falla o algo legítimo pero inusual.">anomalía</button>.</p></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <svg viewBox="0 0 640 260" id="chart" role="img" aria-label="Peticiones por minuto durante un día y la banda que la red considera normal"></svg>
+      <div class="ev" id="ev" role="group" aria-label="Eventos del día"></div>
+      <div class="sens"><label for="k"><strong>Sensibilidad de la alarma</strong></label><input type="range" id="k" min="1" max="6" step="0.5"><span class="v mono" id="kv"></span><span class="muted" id="kt"></span></div>
+      <div class="score"><div><b id="s1"></b><span>problemas detectados</span></div><div><b id="s2"></b><span>falsas alarmas</span></div><div><b id="s3"></b><span>problemas que pasaron sin aviso</span></div></div>
+      <div class="alerts" id="alerts" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Otras tareas de sistemas donde se usan redes</span>
+    <div class="uses">
+      <div><b>🛡️ Seguridad</b><span>Detectar tráfico de red sospechoso, correos de phishing o archivos con malware.</span></div>
+      <div><b>⚙️ Operaciones</b><span>Predecir cuándo se llenará un disco o cuándo hará falta otro servidor.</span></div>
+      <div><b>🧑‍💻 Desarrollo</b><span>Asistentes que sugieren código y ayudan a encontrar errores, siempre revisados por una persona.</span></div>
+      <div><b>🎫 Soporte</b><span>Clasificar tickets de ayuda y mandarlos al equipo correcto.</span></div>
+    </div>
+    <div class="learn">
+      <div><b>Aprender lo normal</b><span>La red no necesita ejemplos de cada ataque: le basta saber muy bien cómo es un día normal.</span></div>
+      <div><b>Todo es un equilibrio</b><span>Una alarma muy sensible molesta con falsas alarmas; una poco sensible deja pasar problemas.</span></div>
+      <div><b>La red avisa, la persona decide</b><span>El ingeniero revisa cada alerta. Una venta de entradas no es un ataque, aunque el tráfico se parezca.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>Si fueras el jefe de sistemas, ¿preferirías 5 falsas alarmas por día o un ataque cada mes sin detectar? No hay respuesta única: depende de lo que cuesta cada error.</p></div>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo II, sección 17.2. Datos simulados con fines didácticos.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+// Patrón normal aprendido: peticiones por minuto según la hora (0 a 24)
+const N=96; // un punto cada 15 minutos
+const hr=i=>i/4;
+const base=i=>{const h=hr(i);return 40+260*Math.exp(-((h-10.5)**2)/6)+200*Math.exp(-((h-16)**2)/5)+60*Math.exp(-((h-20)**2)/3);};
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+const noise=Array.from({length:N},()=>(rnd()-0.5)*2);
+const sd=i=>12+base(i)*0.08;
+const E=[
+ {k:"ddos",n:"⚠️ Ataque de denegación de servicio",d:"Miles de peticiones falsas a las 3 de la madrugada.",real:true,at:[12,13,14],f:(i,v)=>v+420},
+ {k:"caida",n:"⚠️ Falla de la base de datos",d:"A media tarde casi nadie logra conectarse.",real:true,at:[62,63,64,65],f:(i,v)=>v*0.15},
+ {k:"lento",n:"⚠️ Robot que copia datos despacio",d:"Un programa extraño pide datos sin parar por la noche.",real:true,at:[84,85,86,87,88,89],f:(i,v)=>v+65},
+ {k:"notas",n:"✅ Publicación de notas",d:"A las 18:00 todos entran a ver sus notas. Es legítimo.",real:false,at:[72,73],f:(i,v)=>v+120}];
+const st={k:3,on:new Set(),ks:new Set([3])};
+function series(){return Array.from({length:N},(_,i)=>{const evt=E.some(e=>st.on.has(e.k)&&e.at.includes(i));let v=base(i)+noise[i]*sd(i)*(evt?0.3:2.2);E.forEach(e=>{if(st.on.has(e.k)&&e.at.includes(i))v=e.f(i,v);});return Math.max(0,v);});}
+function analyze(){const s=series(),flag=s.map((v,i)=>Math.abs(v-base(i))>st.k*sd(i));
+ const found=[],missed=[],fake=[];
+ E.forEach(e=>{if(!st.on.has(e.k))return;const hit=e.at.some(i=>flag[i]);(e.real?(hit?found:missed):(hit?fake:[])).push(e);});
+ const evIdx=new Set(E.filter(e=>st.on.has(e.k)).flatMap(e=>e.at));
+ const noiseFlags=flag.map((f,i)=>f&&!evIdx.has(i)?i:-1).filter(i=>i>=0);
+ return {s,flag,found,missed,fake,noiseFlags};}
+const hh=i=>{const h=Math.floor(hr(i)),m=(i%4)*15;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;};
+function draw(){const c=tok,a=analyze(),W=640,H=260,L=40,R=10,T=10,B=30,X=i=>L+(W-L-R)*i/(N-1),max=700,Y=v=>T+(H-T-B)*(1-Math.min(v,max)/max);
+ let up="",dn="";for(let i=0;i<N;i++){up+=`${X(i)},${Y(base(i)+st.k*sd(i))} `;}for(let i=N-1;i>=0;i--){dn+=`${X(i)},${Y(Math.max(0,base(i)-st.k*sd(i)))} `;}
+ let g=`<polygon points="${up}${dn}" fill="${c('--blue-soft')}" stroke="none"/>`;
+ [0,200,400,600].forEach(v=>g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c('--line')}" stroke-width="1"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="${c('--soft')}">${v}</text>`);
+ [0,24,48,72,95].forEach(i=>g+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="${c('--soft')}">${i===95?"24:00":hh(i)}</text>`);
+ g+=`<polyline points="${a.s.map((v,i)=>`${X(i)},${Y(v)}`).join(" ")}" fill="none" stroke="${c('--lab')}" stroke-width="2.5"/>`;
+ a.flag.forEach((f,i)=>{if(f)g+=`<circle cx="${X(i)}" cy="${Y(a.s[i])}" r="6" fill="${c('--bad')}" stroke="${c('--card')}" stroke-width="2"/>`;});
+ g+=`<text x="${W-R}" y="${T+12}" text-anchor="end" font-size="12" fill="${c('--soft')}">banda azul = lo que la red considera normal</text>`;
+ $("chart").innerHTML=g;
+ $("ev").innerHTML=E.map(e=>`<button class="btn" aria-pressed="${st.on.has(e.k)}" data-k="${e.k}">${e.n}<small>${e.d}</small></button>`).join("");
+ $("ev").querySelectorAll("button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;st.on.has(k)?st.on.delete(k):st.on.add(k);draw();});
+ $("k").value=st.k;$("kv").textContent=st.k.toFixed(1);$("kt").textContent=st.k<=2?"muy sensible: avisa por cualquier cosa":st.k>=5?"poco sensible: solo avisa si es enorme":"equilibrada";
+ const fakeN=a.fake.length+a.noiseFlags.length;
+ $("s1").textContent=a.found.length;$("s2").textContent=fakeN;$("s3").textContent=a.missed.length;
+ let al=a.found.map(e=>`<div class="alert real"><span>🚨</span><span><strong>Detectado:</strong> ${e.n.slice(2)}. Bien: el equipo puede reaccionar a tiempo.</span></div>`).join("");
+ al+=a.fake.map(e=>`<div class="alert fake"><span>🔔</span><span><strong>Falsa alarma:</strong> ${e.n.slice(2)}. El tráfico era raro, pero legítimo. Una persona debe revisarlo antes de bloquear a los estudiantes.</span></div>`).join("");
+ if(a.noiseFlags.length)al+=`<div class="alert fake"><span>🔔</span><span><strong>${a.noiseFlags.length} ${a.noiseFlags.length===1?"aviso":"avisos"} por variaciones normales</strong> (por ejemplo a las ${hh(a.noiseFlags[0])}). Con la alarma tan sensible, cualquier subida pequeña parece un problema.</span></div>`;
+ al+=a.missed.map(e=>`<div class="alert miss"><span>🙈</span><span><strong>Pasó sin aviso:</strong> ${e.n.slice(2)}. La alarma no fue lo bastante sensible.</span></div>`).join("");
+ $("alerts").innerHTML=al||`<p class="muted">Sin alertas. Activa algún evento del día para ver qué pasa.</p>`;
+ G.update({...st,a});}
+$("k").oninput=e=>{st.k=+e.target.value;st.ks.add(st.k);draw();};
+const G=Guide($("guide"),{
+ intro:"¡Hola! Soy <strong>Chispa</strong> y hoy trabajo en el equipo de sistemas. La línea es el tráfico real del día; la banda azul es lo que yo aprendí que es normal. Vamos a probar mi alarma.",
+ missions:[
+  {text:"Activa el <strong>ataque de denegación de servicio</strong>. ¿Lo detecto?",hint:"Es el primer botón de eventos.",done:s=>s.on.has("ddos")&&s.a.found.some(e=>e.k==="ddos"),ok:"¡Sí! A las 3 de la madrugada casi no hay tráfico y de pronto llegan miles de peticiones. Se sale por mucho de la banda: alarma inmediata."},
+  {text:"Activa el <strong>robot que copia datos despacio</strong> y sube la sensibilidad a <strong>5</strong>: el robot pasa sin aviso. Luego bájala hasta que la alarma lo detecte.",hint:"Primero lleva la sensibilidad a 5 o más. Después muévela hacia la izquierda hasta que el robot aparezca en «Detectado».",done:s=>s.on.has("lento")&&[...s.ks].some(v=>v>=5)&&s.a.found.some(e=>e.k==="lento"),ok:"Los ataques sigilosos se esconden cerca de lo normal. Para verlos hay que bajar el umbral… pero mira el contador de falsas alarmas."},
+  {text:"Activa la <strong>publicación de notas</strong> con la sensibilidad en <strong>3</strong> o menos.",hint:"Es el último botón. Revisa que la sensibilidad marque 3.0 o menos.",done:s=>s.on.has("notas")&&s.a.fake.some(e=>e.k==="notas"),ok:"Sonó la alarma, pero nadie atacaba: los estudiantes querían ver sus notas. La red solo sabe que <strong>es raro</strong>, no sabe <strong>por qué</strong>. Por eso siempre hay una persona que revisa."},
+  {text:"Último reto: con <strong>todos</strong> los eventos activos, busca la sensibilidad con el mejor equilibrio para ti.",hint:"Activa los cuatro eventos y prueba al menos tres valores distintos de sensibilidad.",done:s=>s.on.size===4&&s.ks.size>=4,ok:"No existe la sensibilidad perfecta: siempre se cambian falsas alarmas por problemas no vistos. Decidir ese equilibrio es trabajo de ingeniería, no de la red."}],
+ finale:"¡Excelente! Acabas de usar una red neuronal como lo hace un equipo de sistemas real: para <strong>vigilar</strong> y <strong>avisar</strong>, mientras las personas deciden qué hacer."});
+G.onMission=()=>draw();
+onTheme(draw);draw();
+</script>

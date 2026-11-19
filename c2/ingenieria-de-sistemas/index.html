@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>Vigila el servidor con una red neuronal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#0369A1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#38BDF8}}
+:root[data-theme="dark"]{--lab:#38BDF8}
+#chart{width:100%;display:block}
+.ev{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.ev{grid-template-columns:1fr}}
+.ev .btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-height:64px}
+.ev .btn small{font-weight:400;color:var(--soft);font-size:14px}
+.ev .btn[aria-pressed="true"]{border-color:var(--lab);background:var(--blue-soft)}
+.sens{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--paper);border-radius:14px;padding:10px 14px}
+.sens input{flex:1;min-width:160px;accent-color:var(--lab);min-height:32px}
+.sens .v{font:800 24px var(--f-display);color:var(--lab);min-width:2.6em}
+.alerts{display:flex;flex-direction:column;gap:6px}
+.alert{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;background:var(--paper);border-radius:12px;padding:10px 12px;font-size:16px}
+.alert.real{border-left:5px solid var(--bad)} .alert.fake{border-left:5px solid var(--spark)} .alert.miss{border-left:5px solid var(--soft)}
+.score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.score div{background:var(--paper);border-radius:12px;padding:10px;text-align:center}
+.score b{display:block;font:800 26px var(--f-display)}
+.score span{font-size:13px;color:var(--soft)}
+.uses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.uses{grid-template-columns:1fr}}
+.uses div{background:var(--paper);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;font-size:16px}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo II</span>
+      <span class="tag">Laboratorio 17.2</span>
+      <h1>Vigila el servidor con una red neuronal</h1>
+      <p class="lede">Eres parte del equipo de sistemas de una universidad. Una red neuronal aprendió cómo es un día normal en el sistema de inscripciones. Tu trabajo: decidir qué tan sensible debe ser la alarma.</p>
+      <div class="meta"><span>⏱ 7 minutos</span><span>Un caso típico de Ingeniería de Sistemas</span></div>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">📚</span><p>La red vio <strong>semanas de registros</strong> del servidor y aprendió cuántas peticiones por minuto son normales a cada hora.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">📏</span><p>Cada minuto compara lo que <strong>espera</strong> con lo que <strong>realmente pasa</strong>. La diferencia es el error de predicción.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">🚨</span><p>Si la diferencia es demasiado grande, avisa: puede ser una <button class="term" data-def="Comportamiento que se aparta mucho de lo normal. Puede ser un ataque, una falla o algo legítimo pero inusual.">anomalía</button>.</p></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <svg viewBox="0 0 640 260" id="chart" role="img" aria-label="Peticiones por minuto durante un día y la banda que la red considera normal"></svg>
+      <div class="ev" id="ev" role="group" aria-label="Eventos del día"></div>
+      <div class="sens"><label for="k"><strong>Sensibilidad de la alarma</strong></label><input type="range" id="k" min="1" max="6" step="0.5"><span class="v mono" id="kv"></span><span class="muted" id="kt"></span></div>
+      <div class="score"><div><b id="s1"></b><span>problemas detectados</span></div><div><b id="s2"></b><span>falsas alarmas</span></div><div><b id="s3"></b><span>problemas que pasaron sin aviso</span></div></div>
+      <div class="alerts" id="alerts" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Otras tareas de sistemas donde se usan redes</span>
+    <div class="uses">
+      <div><b>🛡️ Seguridad</b><span>Detectar tráfico de red sospechoso, correos de phishing o archivos con malware.</span></div>
+      <div><b>⚙️ Operaciones</b><span>Predecir cuándo se llenará un disco o cuándo hará falta otro servidor.</span></div>
+      <div><b>🧑‍💻 Desarrollo</b><span>Asistentes que sugieren código y ayudan a encontrar errores, siempre revisados por una persona.</span></div>
+      <div><b>🎫 Soporte</b><span>Clasificar tickets de ayuda y mandarlos al equipo correcto.</span></div>
+    </div>
+    <div class="learn">
+      <div><b>Aprender lo normal</b><span>La red no necesita ejemplos de cada ataque: le basta saber muy bien cómo es un día normal.</span></div>
+      <div><b>Todo es un equilibrio</b><span>Una alarma muy sensible molesta con falsas alarmas; una poco sensible deja pasar problemas.</span></div>
+      <div><b>La red avisa, la persona decide</b><span>El ingeniero revisa cada alerta. Una venta de entradas no es un ataque, aunque el tráfico se parezca.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>Si fueras el jefe de sistemas, ¿preferirías 5 falsas alarmas por día o un ataque cada mes sin detectar? No hay respuesta única: depende de lo que cuesta cada error.</p></div>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../fases/">← 10.4</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><span></span></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo II, sección 17.2. Datos simulados con fines didácticos.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+// Patrón normal aprendido: peticiones por minuto según la hora (0 a 24)
+const N=96; // un punto cada 15 minutos
+const hr=i=>i/4;
+const base=i=>{const h=hr(i);return 40+260*Math.exp(-((h-10.5)**2)/6)+200*Math.exp(-((h-16)**2)/5)+60*Math.exp(-((h-20)**2)/3);};
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+const noise=Array.from({length:N},()=>(rnd()-0.5)*2);
+const sd=i=>12+base(i)*0.08;
+const E=[
+ {k:"ddos",n:"⚠️ Ataque de denegación de servicio",d:"Miles de peticiones falsas a las 3 de la madrugada.",real:true,at:[12,13,14],f:(i,v)=>v+420},
+ {k:"caida",n:"⚠️ Falla de la base de datos",d:"A media tarde casi nadie logra conectarse.",real:true,at:[62,63,64,65],f:(i,v)=>v*0.15},
+ {k:"lento",n:"⚠️ Robot que copia datos despacio",d:"Un programa extraño pide datos sin parar por la noche.",real:true,at:[84,85,86,87,88,89],f:(i,v)=>v+65},
+ {k:"notas",n:"✅ Publicación de notas",d:"A las 18:00 todos entran a ver sus notas. Es legítimo.",real:false,at:[72,73],f:(i,v)=>v+120}];
+const st={k:3,on:new Set(),ks:new Set([3])};
+function series(){return Array.from({length:N},(_,i)=>{const evt=E.some(e=>st.on.has(e.k)&&e.at.includes(i));let v=base(i)+noise[i]*sd(i)*(evt?0.3:2.2);E.forEach(e=>{if(st.on.has(e.k)&&e.at.includes(i))v=e.f(i,v);});return Math.max(0,v);});}
+function analyze(){const s=series(),flag=s.map((v,i)=>Math.abs(v-base(i))>st.k*sd(i));
+ const found=[],missed=[],fake=[];
+ E.forEach(e=>{if(!st.on.has(e.k))return;const hit=e.at.some(i=>flag[i]);(e.real?(hit?found:missed):(hit?fake:[])).push(e);});
+ const evIdx=new Set(E.filter(e=>st.on.has(e.k)).flatMap(e=>e.at));
+ const noiseFlags=flag.map((f,i)=>f&&!evIdx.has(i)?i:-1).filter(i=>i>=0);
+ return {s,flag,found,missed,fake,noiseFlags};}
+const hh=i=>{const h=Math.floor(hr(i)),m=(i%4)*15;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;};
+function draw(){const c=tok,a=analyze(),W=640,H=260,L=40,R=10,T=10,B=30,X=i=>L+(W-L-R)*i/(N-1),max=700,Y=v=>T+(H-T-B)*(1-Math.min(v,max)/max);
+ let up="",dn="";for(let i=0;i<N;i++){up+=`${X(i)},${Y(base(i)+st.k*sd(i))} `;}for(let i=N-1;i>=0;i--){dn+=`${X(i)},${Y(Math.max(0,base(i)-st.k*sd(i)))} `;}
+ let g=`<polygon points="${up}${dn}" fill="${c('--blue-soft')}" stroke="none"/>`;
+ [0,200,400,600].forEach(v=>g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${c('--line')}" stroke-width="1"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="${c('--soft')}">${v}</text>`);
+ [0,24,48,72,95].forEach(i=>g+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="11" fill="${c('--soft')}">${i===95?"24:00":hh(i)}</text>`);
+ g+=`<polyline points="${a.s.map((v,i)=>`${X(i)},${Y(v)}`).join(" ")}" fill="none" stroke="${c('--lab')}" stroke-width="2.5"/>`;
+ a.flag.forEach((f,i)=>{if(f)g+=`<circle cx="${X(i)}" cy="${Y(a.s[i])}" r="6" fill="${c('--bad')}" stroke="${c('--card')}" stroke-width="2"/>`;});
+ g+=`<text x="${W-R}" y="${T+12}" text-anchor="end" font-size="12" fill="${c('--soft')}">banda azul = lo que la red considera normal</text>`;
+ $("chart").innerHTML=g;
+ $("ev").innerHTML=E.map(e=>`<button class="btn" aria-pressed="${st.on.has(e.k)}" data-k="${e.k}">${e.n}<small>${e.d}</small></button>`).join("");
+ $("ev").querySelectorAll("button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;st.on.has(k)?st.on.delete(k):st.on.add(k);draw();});
+ $("k").value=st.k;$("kv").textContent=st.k.toFixed(1);$("kt").textContent=st.k<=2?"muy sensible: avisa por cualquier cosa":st.k>=5?"poco sensible: solo avisa si es enorme":"equilibrada";
+ const fakeN=a.fake.length+a.noiseFlags.length;
+ $("s1").textContent=a.found.length;$("s2").textContent=fakeN;$("s3").textContent=a.missed.length;
+ let al=a.found.map(e=>`<div class="alert real"><span>🚨</span><span><strong>Detectado:</strong> ${e.n.slice(2)}. Bien: el equipo puede reaccionar a tiempo.</span></div>`).join("");
+ al+=a.fake.map(e=>`<div class="alert fake"><span>🔔</span><span><strong>Falsa alarma:</strong> ${e.n.slice(2)}. El tráfico era raro, pero legítimo. Una persona debe revisarlo antes de bloquear a los estudiantes.</span></div>`).join("");
+ if(a.noiseFlags.length)al+=`<div class="alert fake"><span>🔔</span><span><strong>${a.noiseFlags.length} ${a.noiseFlags.length===1?"aviso":"avisos"} por variaciones normales</strong> (por ejemplo a las ${hh(a.noiseFlags[0])}). Con la alarma tan sensible, cualquier subida pequeña parece un problema.</span></div>`;
+ al+=a.missed.map(e=>`<div class="alert miss"><span>🙈</span><span><strong>Pasó sin aviso:</strong> ${e.n.slice(2)}. La alarma no fue lo bastante sensible.</span></div>`).join("");
+ $("alerts").innerHTML=al||`<p class="muted">Sin alertas. Activa algún evento del día para ver qué pasa.</p>`;
+ G.update({...st,a});}
+$("k").oninput=e=>{st.k=+e.target.value;st.ks.add(st.k);draw();};
+const G=Guide($("guide"),{
+ intro:"¡Hola! Soy <strong>Chispa</strong> y hoy trabajo en el equipo de sistemas. La línea es el tráfico real del día; la banda azul es lo que yo aprendí que es normal. Vamos a probar mi alarma.",
+ missions:[
+  {text:"Activa el <strong>ataque de denegación de servicio</strong>. ¿Lo detecto?",hint:"Es el primer botón de eventos.",done:s=>s.on.has("ddos")&&s.a.found.some(e=>e.k==="ddos"),ok:"¡Sí! A las 3 de la madrugada casi no hay tráfico y de pronto llegan miles de peticiones. Se sale por mucho de la banda: alarma inmediata."},
+  {text:"Activa el <strong>robot que copia datos despacio</strong> y sube la sensibilidad a <strong>5</strong>: el robot pasa sin aviso. Luego bájala hasta que la alarma lo detecte.",hint:"Primero lleva la sensibilidad a 5 o más. Después muévela hacia la izquierda hasta que el robot aparezca en «Detectado».",done:s=>s.on.has("lento")&&[...s.ks].some(v=>v>=5)&&s.a.found.some(e=>e.k==="lento"),ok:"Los ataques sigilosos se esconden cerca de lo normal. Para verlos hay que bajar el umbral… pero mira el contador de falsas alarmas."},
+  {text:"Activa la <strong>publicación de notas</strong> con la sensibilidad en <strong>3</strong> o menos.",hint:"Es el último botón. Revisa que la sensibilidad marque 3.0 o menos.",done:s=>s.on.has("notas")&&s.a.fake.some(e=>e.k==="notas"),ok:"Sonó la alarma, pero nadie atacaba: los estudiantes querían ver sus notas. La red solo sabe que <strong>es raro</strong>, no sabe <strong>por qué</strong>. Por eso siempre hay una persona que revisa."},
+  {text:"Último reto: con <strong>todos</strong> los eventos activos, busca la sensibilidad con el mejor equilibrio para ti.",hint:"Activa los cuatro eventos y prueba al menos tres valores distintos de sensibilidad.",done:s=>s.on.size===4&&s.ks.size>=4,ok:"No existe la sensibilidad perfecta: siempre se cambian falsas alarmas por problemas no vistos. Decidir ese equilibrio es trabajo de ingeniería, no de la red."}],
+ finale:"¡Excelente! Acabas de usar una red neuronal como lo hace un equipo de sistemas real: para <strong>vigilar</strong> y <strong>avisar</strong>, mientras las personas deciden qué hacer."});
+G.onMission=()=>draw();
+onTheme(draw);draw();
+</script>
+</body></html>

@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Laboratorio interactivo del libro Redes Neuronales en Mortales"></head><body><title>De la neurona del cerebro a la neurona artificial</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>/* Layout: cuaderno de laboratorio sobre papel cuadriculado; una columna de lectura con "viñetas", guía y banco de pruebas */
+:root{
+  --paper:#F2F5FB; --grid:#E1E7F3; --card:#FFFFFF; --ink:#0A2540; --soft:#4A5B76; --line:#D3DCEB;
+  --blue:#1D4ED8; --blue-soft:#E2EAFD; --spark:#F59E0B; --spark-soft:#FEF0D2; --spark-ink:#9A5B00;
+  --ok:#0F8A47; --ok-soft:#D9F3E4; --bad:#D93A3F; --bad-soft:#FDE2E2; --lab:#1D4ED8;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --shadow:0 2px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0C1526; --grid:#15223A; --card:#121D33; --ink:#E8EEF8; --soft:#A3B2C9; --line:#26375A;
+  --blue:#82A6FF; --blue-soft:#1A2A52; --spark:#FFB938; --spark-soft:#3A2A0C; --spark-ink:#FFCF70;
+  --ok:#5DD68E; --ok-soft:#12331F; --bad:#FF8582; --bad-soft:#3E1717; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;flex-direction:column;gap:30px}
+p{margin:0} h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--f-display);line-height:1.1}
+h1{font-size:clamp(34px,8vw,54px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(25px,5vw,31px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--soft)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:16px;align-items:end}
+@media (max-width:560px){.hero{grid-template-columns:minmax(0,1fr) 96px}}
+.tag{display:inline-flex;gap:8px;align-items:center;font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--lab);color:var(--card);padding:5px 11px;border-radius:6px;transform:rotate(-2deg);width:max-content}
+.book{font:700 13px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.hero-text{display:flex;flex-direction:column;gap:12px}
+.lede{font-size:20px;max-width:58ch}
+.meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:15px;color:var(--soft)}
+.chispa{width:100%;height:auto;max-width:150px}
+/* secciones */
+.sec{display:flex;flex-direction:column;gap:16px}
+.kicker{font:700 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--lab)}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:64ch}
+/* viñetas */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.strip{grid-template-columns:1fr}}
+.panel{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:4px 4px 0 var(--ink)}
+.panel .n{font:800 15px var(--f-display);width:28px;height:28px;border-radius:50%;background:var(--lab);color:var(--card);display:grid;place-items:center}
+.panel .pic{font-size:44px;line-height:1.1;min-height:52px}
+.panel p{font-size:16px;line-height:1.45}
+/* banco */
+.bench{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow)}
+@media (max-width:480px){.bench{padding:16px}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{font:700 16px var(--f-body);border:2px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:12px;cursor:pointer;min-height:46px;transition:transform .12s,border-color .12s}
+.btn:hover{border-color:var(--blue)} .btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--card)}
+.btn.spark{background:var(--spark);border-color:var(--spark);color:#2A1A00}
+.btn:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pill{display:inline-block;font:700 13px var(--f-mono);padding:3px 10px;border-radius:99px;background:var(--blue-soft);color:var(--blue);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.spark{background:var(--spark-soft);color:var(--spark-ink)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}
+th{font:700 12px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--soft)}
+input[type=range]{accent-color:var(--blue);width:100%;height:28px}
+/* guía */
+.guide{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:start;background:var(--blue-soft);border-radius:16px;padding:14px}
+.guide .av{width:72px;height:72px}
+.bubble{background:var(--card);border-radius:14px;padding:12px 14px;position:relative;display:flex;flex-direction:column;gap:8px;border:2px solid var(--ink)}
+.bubble::before{content:"";position:absolute;left:-10px;top:22px;width:16px;height:16px;background:var(--card);border-left:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+.bubble .who{font:700 13px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--lab)}
+.bubble .msg{font-size:17px}
+.missions{display:flex;gap:6px;flex-wrap:wrap}
+.missions span{font:700 12px var(--f-mono);padding:3px 8px;border-radius:99px;background:var(--card);color:var(--soft);border:1px solid var(--line)}
+.missions span.now{border-color:var(--blue);color:var(--blue)}
+.missions span.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.hint{font-size:15px;color:var(--soft);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:480px){.guide{grid-template-columns:52px minmax(0,1fr)}.guide .av{width:52px;height:52px}}
+/* glosario */
+.term{border-bottom:2px dotted var(--lab);cursor:help;font-weight:700;background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;font-weight:700;color:inherit}
+.tip{position:absolute;z-index:20;max-width:min(320px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+/* aprendizajes */
+.learn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.learn{grid-template-columns:1fr}}
+.learn div{background:var(--card);border-radius:14px;padding:14px;border-top:5px solid var(--lab);display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+.learn b{font-family:var(--f-display);font-size:19px;line-height:1.2}
+.learn span{font-size:16px;color:var(--soft)}
+.think{background:var(--spark-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.think b{font-family:var(--f-display);font-size:19px;color:var(--spark-ink)}
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;font-size:16px}
+@media (max-width:560px){.gloss{grid-template-columns:1fr}}
+.gloss dt{font-weight:700} .gloss dd{margin:0 0 6px;color:var(--soft)}
+footer{font-size:14px;color:var(--soft);border-top:2px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.pop{animation:pop .35s ease-out}
+.wob{animation:wobble .5s ease-in-out}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:640px){.panel{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center}.panel .n{grid-row:1;grid-column:1}.panel .pic{grid-row:2;grid-column:1;font-size:36px;min-height:0}.panel p{grid-row:1 / span 2;grid-column:2}}
+.thr>span:first-child{flex-basis:100%;text-align:center}
+
+:root{--lab:#0F766E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#2DD4BF}}
+:root[data-theme="dark"]{--lab:#2DD4BF}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:640px){.duo{grid-template-columns:1fr}}
+.duo figure{margin:0;background:var(--paper);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.duo figcaption{font:700 13px var(--f-mono);color:var(--soft);text-transform:uppercase;letter-spacing:.05em;text-align:center}
+.duo svg{width:100%;height:auto;display:block}
+.part{cursor:pointer}
+.part:focus{outline:none}
+.part:focus-visible .hit{stroke:var(--blue);stroke-width:3;stroke-dasharray:4 3}
+.parts{display:flex;flex-wrap:wrap;gap:8px}
+.parts .btn[aria-pressed="true"]{border-color:var(--lab);color:var(--lab)}
+.parts .btn.seen::after{content:" ✓";color:var(--ok)}
+.card{background:var(--paper);border-radius:14px;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:560px){.card{grid-template-columns:1fr}}
+.card h3{margin:0 0 4px;font-family:var(--f-display);font-size:20px}
+.card .side{display:flex;flex-direction:column;gap:4px}
+.card .lbl{font:700 12px var(--f-mono);color:var(--soft);text-transform:uppercase;letter-spacing:.05em}
+table.cmp{width:100%;border-collapse:collapse;font-size:16px}
+table.cmp th,table.cmp td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.cmp th{font-family:var(--f-mono);font-size:13px;color:var(--soft)}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo II</span>
+      <span class="tag">Laboratorio 10.1</span>
+      <h1>De la neurona del cerebro a la neurona de la máquina</h1>
+      <p class="lede">La neurona artificial es una copia muy simplificada de una célula de tu cerebro. Aquí vas a tocar cada parte de la neurona real y ver en qué se convirtió dentro de la máquina.</p>
+      <div class="meta"><span>⏱ 5 minutos</span><span>Toca las partes del dibujo</span></div>
+    </div>
+    <div data-chispa="happy" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">Primero, la idea</span>
+    <div class="strip">
+      <div class="panel"><span class="n">1</span><span class="pic" aria-hidden="true">📨</span><p>Una neurona <strong>recibe</strong> señales de muchas otras por sus ramitas, las <button class="term" data-def="Prolongaciones cortas y ramificadas de la neurona que reciben señales de otras neuronas.">dendritas</button>.</p></div>
+      <div class="panel"><span class="n">2</span><span class="pic" aria-hidden="true">⚖️</span><p>En el cuerpo de la célula esas señales se <strong>juntan</strong>. Unas empujan a favor y otras en contra.</p></div>
+      <div class="panel"><span class="n">3</span><span class="pic" aria-hidden="true">⚡</span><p>Si el empuje total pasa cierto nivel, la neurona <strong>dispara</strong> un impulso por su cable largo, el <button class="term" data-def="Prolongación larga de la neurona que lleva el impulso eléctrico hacia otras neuronas.">axón</button>.</p></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, explóralo</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <div class="duo">
+        <figure><svg viewBox="0 0 320 200" id="bio" role="img" aria-label="Neurona biológica con sus partes"></svg><figcaption>Neurona de tu cerebro</figcaption></figure>
+        <figure><svg viewBox="0 0 320 200" id="art" role="img" aria-label="Neurona artificial con sus partes"></svg><figcaption>Neurona artificial (nodo)</figcaption></figure>
+      </div>
+      <div class="parts" id="parts" role="group" aria-label="Partes de la neurona"></div>
+      <div class="card" id="card" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Parecidas, pero no iguales</span>
+    <div class="bench tablewrap">
+      <table class="cmp">
+        <thead><tr><th></th><th>Neurona del cerebro</th><th>Neurona artificial</th></tr></thead>
+        <tbody>
+          <tr><td><b>Qué es</b></td><td>Una célula viva</td><td>Una fórmula dentro de un programa</td></tr>
+          <tr><td><b>Señales</b></td><td>Impulsos eléctricos y sustancias químicas</td><td>Números</td></tr>
+          <tr><td><b>Cuántas</b></td><td>Unos 86 000 millones en un cerebro humano</td><td>De unas pocas a miles de millones, según la red</td></tr>
+          <tr><td><b>Cómo aprende</b></td><td>Las conexiones se fortalecen o debilitan con la experiencia</td><td>Un algoritmo ajusta los pesos para reducir el error</td></tr>
+          <tr><td><b>Energía</b></td><td>Todo el cerebro gasta unos 20 vatios, como un foco pequeño</td><td>Entrenar una red grande puede gastar la electricidad de muchas casas durante semanas</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Recibir, juntar, decidir</b><span>La neurona artificial copia solo la idea general: muchas señales entran, se combinan y sale una respuesta.</span></div>
+      <div><b>El peso es la sinapsis</b><span>La fuerza de cada conexión del cerebro se convirtió en un número: el peso. Aprender es cambiar esos números.</span></div>
+      <div><b>Es una metáfora</b><span>Una red neuronal se inspira en el cerebro, pero no lo imita. Por dentro es pura aritmética.</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>Si la neurona artificial es tan simple, ¿de dónde sale el poder de una red neuronal? Pista: piensa en qué pasa cuando juntas millones de ellas.</p></div>
+  </section>
+  <nav class="row" style="justify-content:space-between;gap:10px" aria-label="Otros laboratorios"><span></span><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../">Todos los laboratorios</a><a class="btn" style="text-decoration:none;display:inline-flex;align-items:center" href="../nodo/">10.2 →</a></nav>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo II, sección 10.1.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/* Chispa: la neurona que guía los laboratorios */
+function chispaSVG(mood){
+  const m={happy:"M38 62 Q50 74 62 62",think:"M40 66 L60 64",wow:"M46 64 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0",sad:"M40 68 Q50 60 60 68"}[mood||"happy"];
+  return `<svg viewBox="0 0 100 100" class="chispa-svg" aria-hidden="true">
+  <g stroke="var(--lab)" stroke-width="5" stroke-linecap="round" fill="none">
+   <path d="M22 38 L8 26 M8 26 L4 14 M8 26 L-2 28"/><path d="M20 66 L6 78 M6 78 L-2 76 M6 78 L4 90"/>
+   <path d="M50 20 L50 6 M50 6 L42 0 M50 6 L58 0"/><path d="M80 58 L96 66 M96 66 L100 60"/></g>
+  <circle cx="50" cy="52" r="32" fill="var(--lab)"/>
+  <circle cx="50" cy="52" r="26" fill="var(--card)"/>
+  <circle cx="40" cy="48" r="5" fill="var(--ink)"/><circle cx="60" cy="48" r="5" fill="var(--ink)"/>
+  <circle cx="42" cy="46" r="1.6" fill="var(--card)"/><circle cx="62" cy="46" r="1.6" fill="var(--card)"/>
+  <path d="${m}" stroke="var(--ink)" stroke-width="3.5" fill="${mood==="wow"?"var(--ink)":"none"}" stroke-linecap="round"/>
+  <circle cx="32" cy="58" r="4" fill="var(--spark)" opacity=".55"/><circle cx="68" cy="58" r="4" fill="var(--spark)" opacity=".55"/>
+  <path d="M74 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="var(--spark)"/></svg>`;}
+document.querySelectorAll("[data-chispa]").forEach(el=>el.innerHTML=chispaSVG(el.dataset.chispa));
+
+/* Guía con misiones: cada misión tiene un texto, una pista, una condición y una explicación al lograrla */
+function Guide(root,{intro,missions,finale}){
+  let i=-1,solved=false;
+  root.classList.add("guide");
+  root.innerHTML=`<div class="av"></div><div class="bubble" aria-live="polite"><span class="who"></span><div class="msg"></div>
+    <div class="row" style="gap:8px"><button class="btn primary" data-next></button><button class="btn" data-hint>Dame una pista</button></div>
+    <p class="hint" hidden></p><div class="missions"></div></div>`;
+  const av=root.querySelector(".av"),who=root.querySelector(".who"),msg=root.querySelector(".msg"),nx=root.querySelector("[data-next]"),hb=root.querySelector("[data-hint]"),hint=root.querySelector(".hint"),ms=root.querySelector(".missions");
+  function face(m,anim){av.innerHTML=chispaSVG(m);if(anim){av.classList.remove("wob");void av.offsetWidth;av.classList.add("wob");}}
+  function chips(){ms.innerHTML=missions.map((_,k)=>`<span class="${k<i||(k===i&&solved)?"done":k===i?"now":""}">${k<i||(k===i&&solved)?"✓ ":""}Misión ${k+1}</span>`).join("");}
+  function show(){hint.hidden=true;
+    if(i<0){who.textContent="Chispa";msg.innerHTML=intro;nx.textContent="¡Empecemos!";nx.hidden=false;hb.hidden=true;face("happy");}
+    else if(i>=missions.length){who.textContent="Laboratorio completo";msg.innerHTML=finale;nx.hidden=true;hb.hidden=true;face("wow",true);}
+    else{const m=missions[i];who.textContent=`Misión ${i+1} de ${missions.length}`;msg.innerHTML=m.text;nx.hidden=true;hb.hidden=!m.hint;face("think");}
+    chips();}
+  nx.onclick=()=>{i++;solved=false;show();if(api.onMission)api.onMission(i);};
+  hb.onclick=()=>{hint.hidden=!hint.hidden;hint.innerHTML=missions[i].hint;};
+  const api={update(s){if(i<0||i>=missions.length||solved)return;const m=missions[i];
+      if(m.done(s)){solved=true;who.textContent=`¡Misión ${i+1} lograda!`;msg.innerHTML=(typeof m.ok==="function"?m.ok(s):m.ok);
+        nx.textContent=i===missions.length-1?"Terminar":"Siguiente misión";nx.hidden=false;hb.hidden=true;hint.hidden=true;face("happy",true);chips();}},
+    get index(){return i;},onMission:null,start(){i=0;solved=false;show();}};
+  show();return api;}
+
+/* Glosario: toca una palabra subrayada para ver su significado */
+(function(){let tip=null;
+  function close(){if(tip){tip.remove();tip=null;}}
+  document.addEventListener("click",e=>{const t=e.target.closest(".term");close();if(!t)return;
+    tip=document.createElement("div");tip.className="tip";tip.setAttribute("role","tooltip");tip.textContent=t.dataset.def;document.body.appendChild(tip);
+    const r=t.getBoundingClientRect(),w=tip.offsetWidth;let x=r.left+scrollX;x=Math.max(16,Math.min(x,innerWidth-w-16));
+    tip.style.left=x+"px";tip.style.top=(r.bottom+scrollY+6)+"px";});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+  addEventListener("resize",close);})();
+const tok=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function onTheme(fn){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",fn);new MutationObserver(fn).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});}
+
+const $=id=>document.getElementById(id);
+const P=[
+ {k:"dend",n:"Dendritas",bio:"Ramitas que reciben las señales que llegan de otras neuronas. Una neurona puede tener miles de conexiones de entrada.",art:"<b>Entradas</b> (x₁, x₂, x₃…): los números que recibe el nodo. Pueden ser píxeles de una foto, la temperatura del día o la salida de otros nodos."},
+ {k:"sin",n:"Sinapsis",bio:"El punto de contacto entre dos neuronas. Algunas conexiones son fuertes y otras débiles, y su fuerza cambia con la experiencia: así aprende el cerebro.",art:"<b>Pesos</b> (w₁, w₂, w₃…): un número por cada entrada que dice cuánto importa. Un peso grande amplifica la señal; uno negativo la frena. Entrenar una red es ajustar estos números."},
+ {k:"soma",n:"Cuerpo celular",bio:"Aquí se acumulan todas las señales que llegan. Unas excitan a la neurona y otras la calman.",art:"<b>Suma ponderada</b>: multiplica cada entrada por su peso y suma todo, más un número extra llamado sesgo. El resultado se suele llamar z."},
+ {k:"cono",n:"Umbral de disparo",bio:"Si la carga acumulada pasa cierto nivel, la neurona dispara un impulso. Si no, se queda en silencio. Es todo o nada.",art:"<b>Función de activación</b>: decide qué sale según el valor de z. La más antigua es un escalón (0 o 1), como en el cerebro; las modernas dan respuestas graduales."},
+ {k:"axon",n:"Axón",bio:"El cable largo que lleva el impulso hasta otras neuronas, a veces a más de un metro de distancia.",art:"<b>Salida</b> (y): el número que produce el nodo. Viaja como entrada hacia los nodos de la siguiente capa, o es la respuesta final de la red."}];
+let sel=null;const seen=new Set();
+function bio(c){const on=k=>sel===k,col=k=>on(k)?c('--lab'):c('--soft'),w=k=>on(k)?5:3;
+ let g=`<g class="part" data-k="dend" tabindex="0" role="button" aria-label="Dendritas">
+  <path class="hit" d="M20 40 L70 80 M10 100 L70 100 M20 160 L70 120 M40 20 L80 75 M35 185 L80 125" stroke="${col('dend')}" stroke-width="${w('dend')}" fill="none" stroke-linecap="round"/>
+  <rect x="0" y="10" width="78" height="185" fill="transparent"/></g>`;
+ g+=`<g class="part" data-k="soma" tabindex="0" role="button" aria-label="Cuerpo celular"><circle class="hit" cx="105" cy="100" r="36" fill="${on('soma')?c('--spark-soft'):c('--card')}" stroke="${col('soma')}" stroke-width="${w('soma')}"/><circle cx="105" cy="100" r="10" fill="${col('soma')}" opacity=".5"/></g>`;
+ g+=`<g class="part" data-k="cono" tabindex="0" role="button" aria-label="Umbral de disparo"><path class="hit" d="M140 90 L162 96 L162 104 L140 110 Z" fill="${on('cono')?c('--spark'):c('--line')}" stroke="${col('cono')}" stroke-width="2"/><rect x="138" y="82" width="28" height="36" fill="transparent"/></g>`;
+ g+=`<g class="part" data-k="axon" tabindex="0" role="button" aria-label="Axón"><path class="hit" d="M162 100 L262 100" stroke="${col('axon')}" stroke-width="${w('axon')+3}" stroke-linecap="round"/>${[180,205,230].map(x=>`<rect x="${x}" y="93" width="18" height="14" rx="7" fill="${c('--card')}" stroke="${col('axon')}" stroke-width="2"/>`).join("")}<rect x="162" y="85" width="102" height="30" fill="transparent"/></g>`;
+ g+=`<g class="part" data-k="sin" tabindex="0" role="button" aria-label="Sinapsis"><path class="hit" d="M262 100 L282 80 M262 100 L284 100 M262 100 L282 120" stroke="${col('sin')}" stroke-width="${w('sin')}" stroke-linecap="round"/>${[[288,78],[290,100],[288,122]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="6" fill="${on('sin')?c('--lab'):c('--card')}" stroke="${col('sin')}" stroke-width="2"/>`).join("")}<rect x="262" y="66" width="40" height="70" fill="transparent"/></g>`;
+ return g;}
+function art(c){const on=k=>sel===k,col=k=>on(k)?c('--lab'):c('--soft');
+ let g="";[[40,"x₁"],[100,"x₂"],[160,"x₃"]].forEach(([y,t])=>{
+  g+=`<circle cx="30" cy="${y}" r="18" fill="${on('dend')?c('--blue-soft'):c('--card')}" stroke="${on('dend')?c('--blue'):c('--soft')}" stroke-width="${on('dend')?4:2}"/><text x="30" y="${y+6}" text-anchor="middle" font-size="16" fill="${c('--ink')}">${t}</text>`;
+  g+=`<line x1="48" y1="${y}" x2="128" y2="100" stroke="${col('sin')}" stroke-width="${on('sin')?5:2.5}"/>`;
+  g+=`<text x="${78}" y="${y+(100-y)*0.38-6}" font-size="13" fill="${col('sin')}" font-weight="700">w${t.slice(1)}</text>`;});
+ g+=`<circle cx="160" cy="100" r="34" fill="${on('soma')?c('--spark-soft'):c('--card')}" stroke="${col('soma')}" stroke-width="${on('soma')?5:3}"/><text x="160" y="108" text-anchor="middle" font-size="26" fill="${c('--ink')}">Σ</text><text x="160" y="152" text-anchor="middle" font-size="12" fill="${c('--soft')}">+ sesgo b</text>`;
+ g+=`<rect x="206" y="80" width="40" height="40" rx="8" fill="${on('cono')?c('--spark'):c('--card')}" stroke="${col('cono')}" stroke-width="${on('cono')?4:2.5}"/><path d="M214 110 L226 110 L226 90 L238 90" stroke="${c('--ink')}" stroke-width="2.5" fill="none"/>`;
+ g+=`<line x1="194" y1="100" x2="206" y2="100" stroke="${c('--soft')}" stroke-width="2.5"/><line x1="246" y1="100" x2="285" y2="100" stroke="${col('axon')}" stroke-width="${on('axon')?6:2.5}"/><circle cx="298" cy="100" r="14" fill="${on('axon')?c('--lab'):c('--card')}" stroke="${col('axon')}" stroke-width="2.5"/><text x="298" y="105" text-anchor="middle" font-size="14" fill="${on('axon')?c('--card'):c('--ink')}">y</text>`;
+ return g;}
+function draw(){const c=tok;$("bio").innerHTML=bio(c);$("art").innerHTML=art(c);
+ $("bio").querySelectorAll(".part").forEach(el=>{const pick=()=>choose(el.dataset.k);el.onclick=pick;el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}};});
+ $("parts").innerHTML=P.map(p=>`<button class="btn ${seen.has(p.k)?"seen":""}" aria-pressed="${sel===p.k}" data-k="${p.k}">${p.n}</button>`).join("");
+ $("parts").querySelectorAll("button").forEach(b=>b.onclick=()=>choose(b.dataset.k));
+ const p=P.find(x=>x.k===sel);
+ $("card").innerHTML=p?`<div class="side"><span class="lbl">En el cerebro</span><h3>${p.n}</h3><p>${p.bio}</p></div><div class="side"><span class="lbl">En la máquina</span><p>${p.art}</p></div>`
+  :`<p class="muted">Toca una parte del dibujo de la izquierda o uno de los botones para ver su equivalente en la máquina.</p>`;
+ G.update({seen,sel});}
+function choose(k){sel=k;seen.add(k);draw();}
+const G=Guide($("guide"),{
+ intro:"¡Hola! Soy <strong>Chispa</strong>. Mi abuela era una neurona de verdad, de esas que viven en tu cabeza. Vamos a ver qué me heredó y qué no.",
+ missions:[
+  {text:"Toca las <strong>dendritas</strong>: las ramitas del lado izquierdo de la neurona del cerebro.",hint:"También puedes usar el botón «Dendritas».",done:s=>s.sel==="dend",ok:"Las dendritas se convirtieron en las <strong>entradas</strong> del nodo. En el cerebro llegan impulsos; en la máquina, números."},
+  {text:"Ahora busca dónde se conectan dos neuronas: la <strong>sinapsis</strong>, al final del axón.",hint:"Son los puntitos del extremo derecho.",done:s=>s.sel==="sin",ok:"¡Esta es la parte más importante! La fuerza de cada sinapsis se volvió un <strong>peso</strong>. Cuando una red «aprende», lo que cambia son sus pesos."},
+  {text:"Toca el <strong>cuerpo celular</strong> y luego el <strong>umbral de disparo</strong> (el triangulito que sale de él).",hint:"Primero el círculo grande, después el triángulo que está a su derecha.",done:s=>s.seen.has("soma")&&s.seen.has("cono"),ok:"El cuerpo se convirtió en una <strong>suma</strong> y el umbral, en la <strong>función de activación</strong>. Juntos deciden si sale una señal y de qué tamaño."},
+  {text:"Te falta una parte: el <strong>axón</strong>. Revisa las cinco.",hint:"Es el cable largo del centro. Los botones con ✓ son los que ya viste.",done:s=>s.seen.size===5,ok:"Completaste el mapa: <strong>entradas, pesos, suma, activación y salida</strong>. Esas cinco piezas forman un nodo, y con millones de nodos se arma una red neuronal."}],
+ finale:"¡Muy bien! Ahora ya sabes de dónde viene cada pieza de una neurona artificial. En el Laboratorio 10.2 vas a armar una y hacer las cuentas tú mismo."});
+G.onMission=()=>draw();
+onTheme(draw);draw();
+</script>
+</body></html>

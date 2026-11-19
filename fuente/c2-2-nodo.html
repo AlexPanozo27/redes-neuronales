@@ -1,0 +1,114 @@
+<title>Arma tu propio nodo</title>
+<!--HEAD-->
+<style>/*COMMON*/
+:root{--lab:#1D4ED8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--lab:#60A5FA}}
+:root[data-theme="dark"]{--lab:#60A5FA}
+.ctl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.ctl{grid-template-columns:1fr}}
+.inp{background:var(--paper);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.inp b{font-size:17px}
+.inp label{display:flex;justify-content:space-between;font:700 13px var(--f-mono);color:var(--soft)}
+.inp label span{color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--lab);min-height:32px}
+.extra{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:560px){.extra{grid-template-columns:1fr}}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn[aria-pressed="true"]{border-color:var(--lab);background:var(--blue-soft);color:var(--lab)}
+.calc{font:500 15px/1.7 var(--f-mono);background:var(--paper);border-radius:14px;padding:12px 14px;overflow-x:auto}
+.calc .z{color:var(--lab);font-weight:700}
+.out{display:flex;align-items:center;gap:14px;background:var(--paper);border-radius:14px;padding:12px 14px}
+.meter{flex:1;height:18px;background:var(--line);border-radius:9px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--lab);transition:width .2s}
+.out .v{font:800 30px var(--f-display);min-width:3.2em;text-align:right;color:var(--lab)}
+#plot{width:100%;max-width:420px;display:block;margin:0 auto}
+</style>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="book">Redes Neuronales en Mortales · Capítulo II</span>
+      <span class="tag">Laboratorio 10.2</span>
+      <h1>Arma tu propio nodo</h1>
+      <p class="lede">Un nodo es la pieza más pequeña de una red neuronal. Hace una sola cosa: recibe números, los mezcla según su importancia y entrega una respuesta. Aquí decides tú cuánto pesa cada cosa.</p>
+      <div class="meta"><span>⏱ 7 minutos</span><span>Solo multiplicar y sumar</span></div>
+    </div>
+    <div data-chispa="think" class="chispa"></div>
+  </header>
+
+  <section class="sec">
+    <span class="kicker">La pregunta del nodo</span>
+    <div class="prose">
+      <p>Nuestro nodo debe responder: <strong>«¿Salgo a correr esta tarde?»</strong>. Mira tres cosas: si hay <strong>sol</strong>, cuánto <strong>tiempo libre</strong> tienes y qué tan <strong>cansado</strong> estás. Cada una es un número entre 0 y 1.</p>
+      <p>A cada entrada le corresponde un <button class="term" data-def="Número que indica cuánto influye una entrada en la decisión. Positivo: empuja a favor. Negativo: empuja en contra. Cero: no importa.">peso</button>. También hay un <button class="term" data-def="Número que se suma al final, aunque todas las entradas valgan cero. Es la inclinación de base del nodo: lo hace más fácil o más difícil de activar.">sesgo</button> y una <button class="term" data-def="Regla que convierte la suma en la respuesta final del nodo. El escalón responde sí o no; la sigmoide da un valor entre 0 y 1; ReLU deja pasar solo lo positivo.">función de activación</button>.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Ahora, pruébalo</span>
+    <div id="guide"></div>
+    <div class="bench">
+      <div class="ctl" id="ctl"></div>
+      <div class="extra">
+        <div class="inp"><b>Sesgo (b)</b><label>inclinación de base <span id="bv"></span></label><input type="range" id="b" min="-3" max="3" step="0.1" aria-label="Sesgo"></div>
+        <div class="inp"><b>Función de activación</b><div class="acts" id="acts" role="group" aria-label="Función de activación"></div></div>
+      </div>
+      <div class="calc" id="calc" aria-live="polite"></div>
+      <svg viewBox="0 0 420 150" id="plot" role="img" aria-label="Gráfico de la función de activación"></svg>
+      <div class="out"><span id="emoji" style="font-size:36px" aria-hidden="true"></span><div class="meter" aria-hidden="true"><i id="bar"></i></div><span class="v mono" id="y"></span></div>
+      <p id="say" class="muted"></p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="kicker">Lo que acabas de aprender</span>
+    <div class="learn">
+      <div><b>Multiplicar, sumar, transformar</b><span>Eso es todo lo que hace un nodo: z = w₁x₁ + w₂x₂ + w₃x₃ + b, y luego y = f(z).</span></div>
+      <div><b>Los pesos son la opinión</b><span>Con los mismos datos, otros pesos dan otra decisión. Una red «aprende» cuando encuentra buenos pesos por sí sola.</span></div>
+      <div><b>Un nodo solo es poco</b><span>Un nodo traza una frontera simple. La potencia aparece al conectar muchos en capas (sección 12).</span></div>
+    </div>
+    <div class="think"><b>Para pensar</b><p>Aquí tú elegiste los pesos a mano. ¿Cómo podría una máquina encontrarlos sola si le mostraras cientos de tardes en que saliste o no saliste a correr?</p></div>
+  </section>
+  <footer><span>Ejemplo propio del equipo del libro <em>Redes Neuronales en Mortales</em>, Capítulo II, sección 10.2.</span><span>Funciona en el celular y no guarda ningún dato.</span></footer>
+</div>
+<script>/*COMMONJS*/
+const $=id=>document.getElementById(id);
+const IN=[["☀️ Sol","x₁","w₁"],["⏰ Tiempo libre","x₂","w₂"],["😴 Cansancio","x₃","w₃"]];
+const st={x:[0.8,0.5,0.3],w:[1.5,2,-2],b:-1,f:"escalon",fs:new Set(["escalon"])};
+const F={escalon:z=>z>=0?1:0,sigmoide:z=>1/(1+Math.exp(-z)),relu:z=>Math.max(0,z)};
+const FN={escalon:"Escalón",sigmoide:"Sigmoide",relu:"ReLU"};
+const r2=v=>(Math.round(v*100)/100).toFixed(2);
+$("ctl").innerHTML=IN.map(([n,x,w],i)=>`<div class="inp"><b>${n}</b>
+ <label>${x} entrada <span id="xv${i}"></span></label><input type="range" id="x${i}" min="0" max="1" step="0.1" aria-label="${n}: valor de entrada">
+ <label>${w} peso <span id="wv${i}"></span></label><input type="range" id="w${i}" min="-3" max="3" step="0.1" aria-label="${n}: peso"></div>`).join("");
+$("acts").innerHTML=Object.keys(F).map(k=>`<button class="btn" data-f="${k}">${FN[k]}</button>`).join("");
+const z=()=>st.x.reduce((a,x,i)=>a+x*st.w[i],0)+st.b;
+function plot(c,zz,y){const W=420,H=150,X=v=>210+v*35,Y=v=>120-v*90;let pts=[];
+ for(let v=-5.5;v<=5.5;v+=0.1){let yy=F[st.f](v);if(st.f==="relu")yy=Math.min(yy,1.3);pts.push(`${X(v).toFixed(1)},${Y(yy).toFixed(1)}`);}
+ let g=`<line x1="10" x2="${W-10}" y1="${Y(0)}" y2="${Y(0)}" stroke="${c('--line')}" stroke-width="2"/><line x1="210" x2="210" y1="10" y2="140" stroke="${c('--line')}" stroke-width="2"/>`;
+ g+=`<text x="${W-14}" y="${Y(0)+16}" text-anchor="end" font-size="12" fill="${c('--soft')}">z</text><text x="216" y="20" font-size="12" fill="${c('--soft')}">y</text><text x="216" y="${Y(1)+4}" font-size="11" fill="${c('--soft')}">1</text>`;
+ g+=`<polyline points="${pts.join(" ")}" fill="none" stroke="${c('--lab')}" stroke-width="3.5"/>`;
+ const zc=Math.max(-5.5,Math.min(5.5,zz)),yc=st.f==="relu"?Math.min(y,1.3):y;
+ g+=`<line x1="${X(zc)}" x2="${X(zc)}" y1="${Y(0)}" y2="${Y(yc)}" stroke="${c('--spark')}" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${X(zc)}" cy="${Y(yc)}" r="7" fill="${c('--spark')}" stroke="${c('--ink')}" stroke-width="2"/>`;
+ $("plot").innerHTML=g;}
+function draw(){const c=tok,zz=z(),y=F[st.f](zz);
+ IN.forEach((_,i)=>{$("x"+i).value=st.x[i];$("w"+i).value=st.w[i];$("xv"+i).textContent=r2(st.x[i]);$("wv"+i).textContent=r2(st.w[i]);});
+ $("b").value=st.b;$("bv").textContent=r2(st.b);
+ $("acts").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.f===st.f));
+ $("calc").innerHTML=`z = (${r2(st.x[0])} × ${r2(st.w[0])}) + (${r2(st.x[1])} × ${r2(st.w[1])}) + (${r2(st.x[2])} × ${r2(st.w[2])}) + (${r2(st.b)})<br>z = ${st.x.map((x,i)=>r2(x*st.w[i])).join(" + ")} + ${r2(st.b)} = <span class="z">${r2(zz)}</span><br>y = ${FN[st.f]}(${r2(zz)}) = <span class="z">${r2(y)}</span>`;
+ const p=Math.max(0,Math.min(1,y));$("bar").style.width=(p*100)+"%";$("y").textContent=r2(y);
+ $("emoji").textContent=p>=0.5?"🏃":"🛋️";
+ $("say").textContent=st.f==="escalon"?(y?"El nodo dice SÍ: sal a correr.":"El nodo dice NO: hoy, sillón."):st.f==="sigmoide"?`El nodo está ${Math.round(y*100)} % convencido de salir a correr.`:(y>0?`ReLU deja pasar el valor positivo: la «intensidad» de las ganas es ${r2(y)}.`:"ReLU corta todo lo negativo: la salida es 0.");
+ plot(c,zz,y);G.update({...st,zz,y});}
+IN.forEach((_,i)=>{$("x"+i).oninput=e=>{st.x[i]=+e.target.value;draw();};$("w"+i).oninput=e=>{st.w[i]=+e.target.value;draw();};});
+$("b").oninput=e=>{st.b=+e.target.value;draw();};
+$("acts").querySelectorAll("button").forEach(b=>b.onclick=()=>{st.f=b.dataset.f;st.fs.add(st.f);draw();});
+const G=Guide($("guide"),{
+ intro:"¡Hola! Soy <strong>Chispa</strong> y hoy tú vas a ser mi cerebro. Tengo que decidir si salgo a correr. Ajusta las perillas y mira cómo cambia la cuenta.",
+ missions:[
+  {text:"Sube el <strong>cansancio</strong> (x₃) hasta <strong>1</strong> y mira qué pasa con la decisión.",hint:"Es el control «x₃ entrada» de la tarjeta 😴.",done:s=>s.x[2]>=1,ok:s=>`Con el peso w₃ negativo, el cansancio <strong>resta</strong>: ahora z vale ${r2(s.zz)}. Un peso negativo funciona como un freno.`},
+  {text:"Haz que el cansancio <strong>no importe nada</strong>. ¿Qué peso le darías?",hint:"Si multiplicas cualquier número por cero…",done:s=>Math.abs(s.w[2])<0.05,ok:"¡Exacto! Con w₃ = 0 el cansancio queda multiplicado por cero. Así una red puede «ignorar» un dato que no sirve: dándole un peso cercano a cero."},
+  {text:"Pon el sol y el tiempo libre en <strong>0</strong>. Luego mueve solo el <strong>sesgo</strong> hasta que el nodo diga que sí.",hint:"Las dos primeras entradas en 0 y el sesgo por encima de 0.",done:s=>s.x[0]===0&&s.x[1]===0&&s.f==="escalon"&&s.y===1,ok:"Sin sol ni tiempo, igual sales. Eso es el sesgo: una inclinación que el nodo tiene <strong>antes de mirar los datos</strong>. Es como alguien a quien le encanta correr."},
+  {text:"Cambia la función de activación a <strong>Sigmoide</strong> y después a <strong>ReLU</strong>. Fíjate en el gráfico.",hint:"Los botones están junto al sesgo.",done:s=>s.fs.has("sigmoide")&&s.fs.has("relu"),ok:"El escalón solo dice sí o no. La sigmoide da una respuesta <strong>gradual</strong>, entre 0 y 1, y ReLU deja pasar lo positivo y corta lo negativo. Las redes modernas usan respuestas graduales porque así pueden aprender con pequeños ajustes (sección 12.6)."}],
+ finale:"¡Ya armaste un nodo completo! Ahora imagina miles de nodos así, cada uno con sus propios pesos, pasándose los resultados: eso es una red neuronal."});
+onTheme(draw);draw();
+</script>
